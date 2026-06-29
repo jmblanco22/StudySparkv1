@@ -107,8 +107,8 @@ export default function Home() {
 
       {stats && (
         <div className="flex gap-6 mt-3 text-sm text-gray-600">
-          <span className="font-medium">{stats.streak}-day streak</span>
-          <span className="font-medium">{stats.points} pts</span>
+          <span className="font-medium text-success">{stats.streak}-day streak</span>
+          <span className="font-medium text-success">{stats.points} pts</span>
           <span className="text-gray-400">{stats.totalQuizzes} quiz{stats.totalQuizzes !== 1 ? 'zes' : ''} completed</span>
         </div>
       )}

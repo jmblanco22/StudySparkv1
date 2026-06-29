@@ -1,27 +1,29 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+ @theme {
+  /* Neutrals — the backbone (most of the screen) */
+  --color-background: #f9fafb;   /* page background — soft off-white */
+  --color-surface:    #ffffff;   /* cards, panels */
+  --color-foreground: #1e293b;   /* primary text — dark slate, ~13:1 contrast */
+  --color-muted:      #64748b;   /* secondary text — readable gray */
+  --color-border:     #e2e8f0;   /* card borders, dividers */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Blue — focus & productivity (buttons, links, active states) */
+  --color-primary:    #2563eb;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Green — progress & success (streaks, points, correct answers) */
+  --color-success:    #16a34a;
+
+  /* Amber — highlight / CTA, used SPARINGLY */
+  --color-accent:     #f59e0b;
+
+  /* Red — incorrect answers only */
+  --color-danger:     #dc2626;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
 }
+
