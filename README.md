@@ -97,38 +97,6 @@ Four findings came out of that research, and every one of them is now a real fea
 ---
  
 ---
- 
-## 🏗 Architecture
- 
-```
-Home page (/)
-   │
-   ├─→ POST /api/roadmap        [AI]     topic → modules & submodules → saved
-   │
-   └─→ click a submodule
-          │
-          ├─→ GET /api/lecture   [AI]     cache-first → markdown lesson
-          │
-          ├─→ GET /api/quiz      [AI]     cache-first → 4 MCQs from the lecture
-          │
-          └─→ POST /api/quiz/attempt      server-side scoring → saved attempt
-                    │
-                    ├─→ GET /api/stats           streak + points
-                    └─→ GET /api/leaderboard     ranked across all users
-```
- 
-### Routes
- 
-| Route | Method | AI? | What it does |
-|---|---|---|---|
-| `/api/roadmap` | POST | ✅ | Topic → structured roadmap (`generateObject` + Zod), saved to `roadmaps` |
-| `/api/lecture` | GET | ✅ | Cache-first micro-lecture (`generateText`), saved to `lectures` |
-| `/api/quiz` | GET | ✅ | Cache-first quiz from lecture content, saved to `quizzes` |
-| `/api/quiz/attempt` | POST | ❌ | Scores answers **server-side**, saves to `quiz_attempts` |
-| `/api/stats` | GET | ❌ | Computes streak + points from `quiz_attempts` |
-| `/api/leaderboard` | GET | ❌ | Calls `get_leaderboard()` RPC |
-| `/auth/callback` | GET | ❌ | Exchanges the magic-link PKCE code for a session cookie |
- 
 ### Pages
  
 | Path | What it is |
@@ -138,14 +106,7 @@ Home page (/)
 | `/learn/[roadmapId]/[moduleIndex]/[submoduleIndex]` | Micro-lecture view |
 | `/learn/.../quiz` | Quiz + results |
 | `/leaderboard` | Rankings |
- 
-### Supporting files
- 
-- `lib/supabase/client.ts` — browser client (client components)
-- `lib/supabase/server.ts` — server client (route handlers, reads/writes cookies)
-- `middleware.ts` — refreshes the session cookie on every request
-- `app/globals.css` — the entire design system, as Tailwind `@theme` tokens
----
+
  
 ## 🗄 Database Schema
  
