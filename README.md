@@ -1,6 +1,6 @@
 <div align="center">
-#StudySpark⚡
- 
+
+# Studyspark ⚡ 
 **Turning "I should study" into "I actually want to."**
  
 An AI-powered study buddy. Give it a topic and it builds you a personalized roadmap, teaches each piece, quizzes you on it, and tracks how far you've come.
