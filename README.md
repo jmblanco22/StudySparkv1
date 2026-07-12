@@ -1,5 +1,5 @@
 <div align="center">
-#⚡ StudySpark
+#StudySpark⚡
  
 **Turning "I should study" into "I actually want to."**
  
