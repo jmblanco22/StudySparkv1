@@ -193,7 +193,7 @@ Things worth reading the code for:
  
 StudySpark started as a prototype in my User Experience Design, Prototyping, and Evaluation class.
  
-Over the last few months my team and I worked on the idea and UI design of an app called StudySpark. It started after we interviewed some of our fellow peers about their study habits. One thing stood out: most students know they should study, they *want* to do it, but when they actually sit down — it just doesn't click. Learning often feels passive, repetitive, and honestly kind of draining.
+Over the last few months my team and I worked on the idea and UI design of an app called StudySpark. It started after we interviewed some of our fellow peers about their study habits. One thing stood out: most students know they should study, they *want* to do it, but when they actually sit down and it just doesn't click. Learning often feels passive, repetitive, and honestly kind of draining.
  
 So we set out to understand why students struggle to engage with learning outside of class, and to build a tool that would increase engagement and retention.
  
@@ -201,7 +201,7 @@ Four findings shaped everything that followed:
  
 **Bite-sized sessions.** Think Duolingo, Mimo, Quizlet, Anki. Everyone we interviewed consistently reported that large tasks like studying feel daunting, which kills motivation. Our design breaks work into short, manageable sessions.
  
-**Visible progress.** Students said they were more motivated when they could see advancement. So we focused on clear progress indicators and milestone feedback. In a user sense, it's great to see your progress — and on the business side, it's what keeps users coming back, because they're "winning."
+**Visible progress.** Students said they were more motivated when they could see advancement. So we focused on clear progress indicators and milestone feedback. In a user sense, it's great to see your progress and on the business side, it's what keeps users coming back, because they're "winning."
  
 **An engaging experience.** Studying felt passive and repetitive to our peers. The design needed to make learning interactive, stimulating, and rewarding.
  
@@ -221,7 +221,7 @@ Scaffolded Next.js, pushed to GitHub, and had a blank app live on Vercel the sam
  
 Then came magic-link auth — and the bug that ate the week. Clicking the link kept landing me on the Supabase domain with `{"error":"requested path is invalid"}`. Two causes, stacked: localhost wasn't in Supabase's redirect allowlist, *and* the auth callback was storing the session in a cookie while the home page was looking for it in localStorage. It said I was logged out while I was, in fact, logged in.
  
-The fix was migrating fully to `@supabase/ssr` — a browser client, a server client, and middleware to refresh the session cookie on every request. Auth has been rock-solid since.
+The fix was migrating fully to `@supabase/ssr` a browser client, a server client, and middleware to refresh the session cookie on every request. Auth has been rock-solid since.
  
 **Learned:** when a login "works" but bounces you back to the login page, suspect a session *storage* mismatch, not the login itself.
  
@@ -245,7 +245,7 @@ One thing that made me laugh: I typed **"Basic Derivatives"** expecting calculus
  
 <!-- ![Micro-lecture](docs/images/week3-lecture.png) -->
  
-Made submodules clickable. Each one now opens into an AI-written micro-lecture in markdown — and gets cached in Postgres, so the second visit is instant and free.
+Made submodules clickable. Each one now opens into an AI-written micro-lecture in markdown and gets cached in Postgres, so the second visit is instant and free.
  
 This is the week StudySpark went from *a list of topics* to *a place you actually learn something.*
  
