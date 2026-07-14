@@ -2,28 +2,111 @@
 @plugin "@tailwindcss/typography";
 
  @theme {
-  /* Neutrals — the backbone (most of the screen) */
-  --color-background: #f9fafb;   /* page background — soft off-white */
-  --color-surface:    #ffffff;   /* cards, panels */
-  --color-foreground: #1e293b;   /* primary text — dark slate, ~13:1 contrast */
-  --color-muted:      #64748b;   /* secondary text — readable gray */
-  --color-border:     #e2e8f0;   /* card borders, dividers */
+  /* Neutrals */
+  --color-background: #F8F5FF;
+  --color-surface:    #ffffff;
+  --color-foreground: #1e293b;
+  --color-muted:      #64748b;
+  --color-border:     #E2D9F3;
 
-  /* Blue — focus & productivity (buttons, links, active states) */
-  --color-primary:    #2563eb;
+  /* Deep purple — buttons, links, active states */
+  --color-primary:    #7941F2;
 
-  /* Green — progress & success (streaks, points, correct answers) */
+  /* Soft purple — secondary highlights */
+  --color-secondary:  #B17EBF;
+
+  /* Light blue — info */
+  --color-info:       #9BD1F2;
+
+  /* Yellow — accent / CTA */
+  --color-accent:     #F2CF63;
+
+  /* Orange — incorrect answers, errors */
+  --color-danger:     #F26D3D;
+
+  /* Green — correct answers, streaks, points */
   --color-success:    #16a34a;
-
-  /* Amber — highlight / CTA, used SPARINGLY */
-  --color-accent:     #f59e0b;
-
-  /* Red — incorrect answers only */
-  --color-danger:     #dc2626;
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
+}
+
+.loader {
+  --color-1: #fff;
+  --color-2: #000;
+  --color-3: #cfecf9;
+  --size: 1px;
+
+  width: calc(160 * var(--size));
+  height: calc(185 * var(--size));
+  position: relative;
+  background: var(--color-1);
+  border-radius: calc(100 * var(--size)) calc(100 * var(--size)) 0 0;
+}
+.loader:after {
+  content: '';
+  position: absolute;
+  width: calc(100 * var(--size));
+  height: calc(125 * var(--size));
+  left: 50%;
+  top: calc(25 * var(--size));
+  transform: translateX(-50%);
+  background-image:
+    radial-gradient(circle, var(--color-2) 48%, transparent 55%),
+    radial-gradient(circle, var(--color-2) 48%, transparent 55%),
+    radial-gradient(circle, var(--color-1) 30%, transparent 45%),
+    radial-gradient(circle, var(--color-2) 48%, transparent 51%),
+    linear-gradient(var(--color-2) calc(20 * var(--size)), transparent 0),
+    linear-gradient(var(--color-3) calc(60 * var(--size)), transparent 0),
+    radial-gradient(circle, var(--color-3) 50%, transparent 51%),
+    radial-gradient(circle, var(--color-3) 50%, transparent 51%);
+  background-repeat: no-repeat;
+  background-size:
+    calc(16 * var(--size)) calc(16 * var(--size)),
+    calc(16 * var(--size)) calc(16 * var(--size)),
+    calc(10 * var(--size)) calc(10 * var(--size)),
+    calc(42 * var(--size)) calc(42 * var(--size)),
+    calc(12 * var(--size)) calc(3 * var(--size)),
+    calc(50 * var(--size)) calc(25 * var(--size)),
+    calc(70 * var(--size)) calc(70 * var(--size)),
+    calc(70 * var(--size)) calc(70 * var(--size));
+  background-position:
+    calc(25 * var(--size)) calc(10 * var(--size)),
+    calc(55 * var(--size)) calc(10 * var(--size)),
+    calc(36 * var(--size)) calc(44 * var(--size)),
+    50% calc(30 * var(--size)),
+    50% calc(85 * var(--size)),
+    50% calc(50 * var(--size)),
+    50% calc(22 * var(--size)),
+    50% calc(45 * var(--size));
+  animation: faceLift 3s linear infinite alternate;
+}
+.loader:before {
+  content: '';
+  position: absolute;
+  width: 140%;
+  height: calc(125 * var(--size));
+  left: -20%;
+  top: 0;
+  background-image:
+    radial-gradient(circle, var(--color-1) 48%, transparent 50%),
+    radial-gradient(circle, var(--color-1) 48%, transparent 50%);
+  background-repeat: no-repeat;
+  background-size: calc(65 * var(--size)) calc(65 * var(--size));
+  background-position:
+    0 calc(12 * var(--size)),
+    calc(145 * var(--size)) calc(12 * var(--size));
+  animation: earLift 3s linear infinite alternate;
+}
+
+@keyframes faceLift {
+  0% { transform: translateX(-60%); }
+  100% { transform: translateX(-30%); }
+}
+@keyframes earLift {
+  0% { transform: translateX(calc(10 * var(--size))); }
+  100% { transform: translateX(0); }
 }
 

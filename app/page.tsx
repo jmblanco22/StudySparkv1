@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
 type Module = {
@@ -20,6 +21,7 @@ type RoadmapRow = {
 
 export default function Home() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState<string | null>(null)
   const [loadingSession, setLoadingSession] = useState(true)
 
@@ -45,7 +47,14 @@ export default function Home() {
         .from('roadmaps')
         .select('id, topic, content, created_at')
         .order('created_at', { ascending: false })
-      if (data) setSavedRoadmaps(data as RoadmapRow[])
+      if (data) {
+        setSavedRoadmaps(data as RoadmapRow[])
+        const returnId = searchParams.get('roadmapId')
+        if (returnId) {
+          const match = (data as RoadmapRow[]).find(r => r.id === returnId)
+          if (match) setActiveRoadmap(match)
+        }
+      }
 
       fetch('/api/stats')
         .then((r) => r.json())
@@ -81,14 +90,18 @@ export default function Home() {
     }
   }
 
-  if (loadingSession) return <p style={{ padding: 40 }}>Loading…</p>
+  if (loadingSession) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <span className="loader" />
+    </div>
+  )
 
   return (
     <div style={{ maxWidth: 700, margin: '60px auto', padding: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>StudySpark</h1>
+        <Image src="/Logo-StudySpark-rbg.png" alt="StudySpark" height={48} width={180} priority />
         <div className="flex items-center gap-3">
-          <Link href="/leaderboard" className="text-sm text-blue-600 hover:underline">
+          <Link href="/leaderboard" className="text-sm text-primary hover:underline">
             Leaderboard
           </Link>
           <button
@@ -97,7 +110,7 @@ export default function Home() {
               await supabase.auth.signOut()
               router.replace('/login')
             }}
-            style={{ padding: '6px 12px', background: '#eee', border: 'none', borderRadius: 6 }}
+            style={{ padding: '6px 12px', background: '#F8F5FF', border: '1px solid #E2D9F3', borderRadius: 6 }}
           >
             Sign out
           </button>
@@ -119,20 +132,21 @@ export default function Home() {
           <input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !generating && topic.trim() && generateRoadmap()}
             placeholder="e.g. Calculus derivatives"
             style={{ flex: 1, padding: 10 }}
           />
           <button
             onClick={generateRoadmap}
             disabled={generating || !topic.trim()}
-            style={{ padding: '10px 16px', background: '#0070f3', color: 'white', border: 'none', borderRadius: 6 }}
+            style={{ padding: '10px 16px', background: '#7941F2', color: 'white', border: 'none', borderRadius: 6 }}
           >
             {generating ? 'Generating…' : 'Generate'}
           </button>
         </div>
       </div>
 
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && <p style={{ color: '#F26D3D' }}>{error}</p>}
 
       {activeRoadmap && (
         <div style={{ marginTop: 30 }}>
@@ -146,7 +160,7 @@ export default function Home() {
                   <li key={j} style={{ marginBottom: 6 }}>
                     <Link
                       href={`/learn/${activeRoadmap.id}/${i}/${j}`}
-                      className="font-semibold text-blue-600 hover:underline"
+                      className="font-semibold text-primary hover:underline"
                     >
                       {sub.title}
                     </Link>
@@ -172,8 +186,8 @@ export default function Home() {
                 textAlign: 'left',
                 padding: '10px 14px',
                 marginBottom: 8,
-                background: activeRoadmap?.id === r.id ? '#e8f0fe' : '#f9f9f9',
-                border: '1px solid #eee',
+                background: activeRoadmap?.id === r.id ? '#EDE6FF' : '#F8F5FF',
+                border: activeRoadmap?.id === r.id ? '1px solid #7941F2' : '1px solid #E2D9F3',
                 borderRadius: 6,
                 cursor: 'pointer',
               }}

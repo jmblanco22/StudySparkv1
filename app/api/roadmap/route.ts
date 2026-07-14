@@ -5,16 +5,16 @@ import { z } from 'zod'
 
 const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY })
 
-const roadmapSchema = z.object({
-  topic: z.string(),
-  modules: z.array(
+const roadmapSchema = z.object({        // an object that has...
+  topic: z.string(),                    // a "topic" that's text
+  modules: z.array(                     // a "modules" list, where each item is...
     z.object({
-      title: z.string(),
-      description: z.string(),
-      submodules: z.array(
+      title: z.string(),                // a title (text)
+      description: z.string(),          // a description (text)
+      submodules: z.array(              // a "submodules" list, each with...
         z.object({
-          title: z.string(),
-          summary: z.string(),
+          title: z.string(),            // a title
+          summary: z.string(),          // a summary
         })
       ),
     })
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
   let object
   try {
-    const result = await generateObject({
+    const result = await generateObject({ //how prompting works
       model: openrouter.chat('deepseek/deepseek-v4-flash'),
       schema: roadmapSchema,
       prompt: `Create a structured learning roadmap for someone who wants to learn "${topic}".

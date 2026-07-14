@@ -29,6 +29,16 @@ export async function GET(req: Request) {
     return Response.json({ error: 'Missing or invalid params' }, { status: 400 })
   }
 
+  // Always fetch roadmap for counts and context
+  const { data: roadmap } = await supabase
+    .from('roadmaps')
+    .select('content')
+    .eq('id', roadmapId)
+    .single()
+
+  const totalModules: number = roadmap?.content?.modules?.length ?? 0
+  const totalSubmodules: number = roadmap?.content?.modules?.[moduleIndex]?.submodules?.length ?? 0
+
   // Check cache
   const { data: cached } = await supabase
     .from('quizzes')
@@ -38,7 +48,7 @@ export async function GET(req: Request) {
     .eq('submodule_index', submoduleIndex)
     .single()
 
-  if (cached) return Response.json({ quizId: cached.id, questions: cached.questions })
+  if (cached) return Response.json({ quizId: cached.id, questions: cached.questions, totalModules, totalSubmodules })
 
   // Fetch lecture content for context
   const { data: lecture } = await supabase
@@ -52,11 +62,6 @@ export async function GET(req: Request) {
   // Fallback to roadmap submodule summary if no lecture cached yet
   let context = lecture?.content ?? ''
   if (!context) {
-    const { data: roadmap } = await supabase
-      .from('roadmaps')
-      .select('content')
-      .eq('id', roadmapId)
-      .single()
     const sub = roadmap?.content?.modules?.[moduleIndex]?.submodules?.[submoduleIndex]
     context = sub ? `${sub.title}: ${sub.summary}` : ''
   }
@@ -68,9 +73,11 @@ export async function GET(req: Request) {
     const result = await generateObject({
       model: openrouter.chat('deepseek/deepseek-v4-flash'),
       schema: quizSchema,
-      prompt: `Based on the following study material, generate exactly 4 multiple-choice questions to test understanding.
+      prompt: `Based on the following study material, generate exactly 4 multiple-choice questions for a quick study session.
 Each question must have exactly 4 options (A–D) and one correct answer.
-Make questions test genuine comprehension, not just recall of exact wording.
+Keep questions simple and straightforward — test basic recall and key facts, not nuanced analysis.
+Wrong answer options should be clearly different from the correct one so students can build confidence.
+Avoid trick questions or overly similar answer choices.
 
 Material:
 ${context}`,
@@ -98,5 +105,5 @@ ${context}`,
     return Response.json({ error: 'Failed to save quiz' }, { status: 500 })
   }
 
-  return Response.json({ quizId: inserted.id, questions })
+  return Response.json({ quizId: inserted.id, questions, totalModules, totalSubmodules })
 }

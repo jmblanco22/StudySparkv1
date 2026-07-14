@@ -46,7 +46,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          style={{ width: '100%', padding: '10px', background: '#0070f3', color: 'white', border: 'none' }}
+          style={{ width: '100%', padding: '10px', background: '#7941F2', color: 'white', border: 'none', borderRadius: 6 }}
         >
           {loading ? 'Sending...' : 'Send Magic Link'}
         </button>

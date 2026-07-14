@@ -33,13 +33,13 @@ export default function LeaderboardPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
-      <Link href="/" className="text-sm text-blue-600 hover:underline">
+      <Link href="/" className="text-sm text-primary hover:underline">
         ← Back to home
       </Link>
 
       <h1 className="text-2xl font-bold mt-6 mb-8">Leaderboard</h1>
 
-      {loading && <p className="text-gray-500">Loading…</p>}
+      {loading && <span className="loader" />}
       {error && <p className="text-red-600">{error}</p>}
 
       {!loading && !error && leaderboard.length === 0 && (
@@ -55,16 +55,16 @@ export default function LeaderboardPage() {
                 key={entry.user_id}
                 className={`flex items-center gap-4 px-4 py-3 rounded-lg border ${
                   isMe
-                    ? 'border-blue-300 bg-blue-50'
-                    : 'border-gray-200 bg-white'
+                    ? 'border-secondary/50 bg-secondary/10'
+                    : 'border-border bg-surface'
                 }`}
               >
                 <span className="w-6 text-center text-sm font-medium text-gray-400">
                   {i + 1}
                 </span>
-                <span className={`flex-1 font-medium ${isMe ? 'text-blue-700' : ''}`}>
+                <span className={`flex-1 font-medium ${isMe ? 'text-primary' : ''}`}>
                   {entry.display_name}
-                  {isMe && <span className="ml-2 text-xs text-blue-500">(you)</span>}
+                  {isMe && <span className="ml-2 text-xs text-secondary">(you)</span>}
                 </span>
                 <span className="text-sm font-semibold">{entry.points} pts</span>
                 <span className="text-xs text-gray-400 w-24 text-right">

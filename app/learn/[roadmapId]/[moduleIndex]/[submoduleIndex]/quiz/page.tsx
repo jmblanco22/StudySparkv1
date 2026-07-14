@@ -13,6 +13,8 @@ type Question = {
 type QuizData = {
   quizId: string
   questions: Question[]
+  totalModules: number
+  totalSubmodules: number
 }
 
 type ResultData = {
@@ -78,8 +80,8 @@ export default function QuizPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-10">
-        <p className="text-gray-500">Generating your quiz…</p>
+      <div className="max-w-2xl mx-auto px-4 py-10 flex justify-center">
+        <span className="loader" />
       </div>
     )
   }
@@ -87,8 +89,8 @@ export default function QuizPage() {
   if (error) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-10">
-        <p className="text-red-600">{error}</p>
-        <Link href={lectureHref} className="text-sm text-blue-600 hover:underline mt-4 block">
+        <p className="text-danger">{error}</p>
+        <Link href={lectureHref} className="text-sm text-primary hover:underline mt-4 block">
           ← Back to lecture
         </Link>
       </div>
@@ -97,6 +99,14 @@ export default function QuizPage() {
 
   if (result) {
     const pct = Math.round((result.score / result.total) * 100)
+    const mIdx = parseInt(moduleIndex)
+    const sIdx = parseInt(submoduleIndex)
+    const nextLectureHref = sIdx + 1 < quiz!.totalSubmodules
+      ? `/learn/${roadmapId}/${mIdx}/${sIdx + 1}`
+      : mIdx + 1 < quiz!.totalModules
+        ? `/learn/${roadmapId}/${mIdx + 1}/0`
+        : null
+
     return (
       <div className="max-w-2xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold mb-2">Quiz Results</h1>
@@ -109,7 +119,7 @@ export default function QuizPage() {
             return (
               <div
                 key={i}
-                className={`p-4 rounded-lg border ${isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}
+                className={`p-4 rounded-lg border ${isCorrect ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}
               >
                 <p className="font-medium mb-2">{q.question}</p>
                 <p className="text-sm">
@@ -126,14 +136,16 @@ export default function QuizPage() {
         </div>
 
         <div className="flex gap-3">
-          <button
-            onClick={handleRetake}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Retake quiz
+          {nextLectureHref ? (
+            <Link href={nextLectureHref} className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90">
+              Next lecture →
+            </Link>
+          ) : null}
+          <button onClick={handleRetake} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+            Try again
           </button>
-          <Link href={lectureHref} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-            Back to lecture
+          <Link href={`/?roadmapId=${roadmapId}`} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+            Back to roadmap
           </Link>
         </div>
       </div>
@@ -142,7 +154,7 @@ export default function QuizPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
-      <Link href={lectureHref} className="text-sm text-blue-600 hover:underline">
+      <Link href={lectureHref} className="text-sm text-primary hover:underline">
         ← Back to lecture
       </Link>
 
@@ -159,8 +171,8 @@ export default function QuizPage() {
                   onClick={() => setSelected((prev) => prev.map((v, idx) => idx === i ? j : v))}
                   className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
                     selected[i] === j
-                      ? 'border-blue-500 bg-blue-50 text-blue-900'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      ? 'border-primary bg-primary/10 text-foreground font-medium'
+                      : 'border-border hover:border-secondary/50 hover:bg-secondary/5'
                   }`}
                 >
                   {opt}
@@ -174,7 +186,7 @@ export default function QuizPage() {
       <button
         onClick={handleSubmit}
         disabled={!allAnswered || submitting}
-        className="mt-10 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="mt-10 px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {submitting ? 'Submitting…' : 'Submit answers'}
       </button>

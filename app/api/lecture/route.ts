@@ -56,7 +56,11 @@ export async function GET(req: Request) {
       prompt: `Write a concise micro-lecture on "${sub.title}" within the module "${mod.title}".
 Context: ${sub.summary}
 Format as markdown: use ## subheadings, bullet points where helpful, and end with a ## Key Takeaway section.
-Length: 300–500 words. Be clear, educational, and direct.`,
+Do NOT include a title heading at the start — jump straight into the content.
+Length: 300–500 words. Be clear, educational, and direct.
+
+Diagram rule: if the topic involves a process, steps, a workflow, a hierarchy, stages, or any sequential or structural relationship, include exactly ONE diagram as a fenced mermaid code block placed after the first paragraph. Use simple valid Mermaid syntax — prefer flowchart TD or graph TD. Keep every node label very short and use only plain alphanumeric text and spaces — no parentheses, no quotes, no brackets, no special characters inside labels, as these break parsing.
+If the topic is purely conceptual (a definition, a theory, an abstract idea with no inherent structure), include no diagram at all.`,
     })
     text = result.text
   } catch (err) {
