@@ -135,7 +135,7 @@ export default function QuizPage() {
           })}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3">  
           {nextLectureHref ? (
             <Link href={nextLectureHref} className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90">
               Next lecture →

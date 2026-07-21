@@ -15,6 +15,7 @@ const roadmapSchema = z.object({        // an object that has...
         z.object({
           title: z.string(),            // a title
           summary: z.string(),          // a summary
+          visual: z.boolean(),
         })
       ),
     })
@@ -40,10 +41,12 @@ export async function POST(req: Request) {
     const result = await generateObject({ //how prompting works
       model: openrouter.chat('deepseek/deepseek-v4-flash'),
       schema: roadmapSchema,
-      prompt: `Create a structured learning roadmap for someone who wants to learn "${topic}".
-Break it into 3-5 modules, ordered so each builds on the previous.
-Each module has 2-4 bite-sized submodules.
-Keep titles short and every description to one sentence.`,
+      prompt: `Create a structured learning roadmap for someone who wants to learn: "${topic}".
+- Break it into 3-5 modules, ordered so each builds on the previous.
+- Each module has 2-4 bite-sized submodules.
+- Keep titles short and every description to one sentence.
+- Set "visual" to true ONLY if this submodule teaches something that can be literally photographed: a physical object, material, tool, place, or a person performing a hands-on activity.
+- Set "visual" to false for anything conceptual, mathematical, theoretical, or symbolic — including formulas, proofs, economics, philosophy, and abstract processes. When in doubt, use false.`,
     })
     object = result.object
   } catch (error) {

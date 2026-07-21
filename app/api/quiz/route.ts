@@ -60,7 +60,7 @@ export async function GET(req: Request) {
     .single()
 
   // Fallback to roadmap submodule summary if no lecture cached yet
-  let context = lecture?.content ?? ''
+  let context = (lecture?.content ?? '').replace(/!\[.*?\]\(.*?\)/g, '')
   if (!context) {
     const sub = roadmap?.content?.modules?.[moduleIndex]?.submodules?.[submoduleIndex]
     context = sub ? `${sub.title}: ${sub.summary}` : ''
