@@ -18,8 +18,8 @@ export default function LecturePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const { roadmapId, moduleIndex, submoduleIndex } = params as Record<string, string>
-  const quizHref = `/learn/${roadmapId}/${moduleIndex}/${submoduleIndex}/quiz`
+  const { id: roadmapId, moduleIndex, submoduleIndex } = params as Record<string, string>
+  const quizHref = `/roadmap/${roadmapId}/${moduleIndex}/${submoduleIndex}/quiz`
 
   useEffect(() => {
     const url = `/api/lecture?roadmapId=${roadmapId}&moduleIndex=${moduleIndex}&submoduleIndex=${submoduleIndex}`
@@ -37,8 +37,8 @@ export default function LecturePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
-      <Link href="/" className="text-sm text-primary hover:underline">
-        ← Back to roadmaps
+      <Link href={`/roadmap/${roadmapId}`} className="text-sm text-primary hover:underline">
+        ← Back to roadmap
       </Link>
 
       {loading && (

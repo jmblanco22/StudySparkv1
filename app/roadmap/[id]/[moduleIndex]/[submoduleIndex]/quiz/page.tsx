@@ -25,9 +25,9 @@ type ResultData = {
 export default function QuizPage() {
   const params = useParams()
   const router = useRouter()
-  const { roadmapId, moduleIndex, submoduleIndex } = params as Record<string, string>
+  const { id: roadmapId, moduleIndex, submoduleIndex } = params as Record<string, string>
 
-  const lectureHref = `/learn/${roadmapId}/${moduleIndex}/${submoduleIndex}`
+  const lectureHref = `/roadmap/${roadmapId}/${moduleIndex}/${submoduleIndex}`
 
   const [quiz, setQuiz] = useState<QuizData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -102,9 +102,9 @@ export default function QuizPage() {
     const mIdx = parseInt(moduleIndex)
     const sIdx = parseInt(submoduleIndex)
     const nextLectureHref = sIdx + 1 < quiz!.totalSubmodules
-      ? `/learn/${roadmapId}/${mIdx}/${sIdx + 1}`
+      ? `/roadmap/${roadmapId}/${mIdx}/${sIdx + 1}`
       : mIdx + 1 < quiz!.totalModules
-        ? `/learn/${roadmapId}/${mIdx + 1}/0`
+        ? `/roadmap/${roadmapId}/${mIdx + 1}/0`
         : null
 
     return (
@@ -144,9 +144,9 @@ export default function QuizPage() {
           <button onClick={handleRetake} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
             Try again
           </button>
-          <Link href={`/?roadmapId=${roadmapId}`} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-            Back to roadmap
-          </Link>
+          <Link href={`/roadmap/${roadmapId}`} className="text-sm text-primary hover:underline">
+        ← Back to roadmap
+      </Link>
         </div>
       </div>
     )

@@ -1,32 +1,23 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
-type Module = {
-  title: string
-  description: string
-  submodules: { title: string; summary: string }[]
-}
-
 type RoadmapRow = {
   id: string
   topic: string
-  content: { topic: string; modules: Module[] }
   created_at: string
 }
 
-function HomeContent() {
+export default function Home() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState<string | null>(null)
   const [loadingSession, setLoadingSession] = useState(true)
 
   const [topic, setTopic] = useState('')
-  const [activeRoadmap, setActiveRoadmap] = useState<RoadmapRow | null>(null)
   const [savedRoadmaps, setSavedRoadmaps] = useState<RoadmapRow[]>([])
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
@@ -43,18 +34,12 @@ function HomeContent() {
       setEmail(session.user.email ?? null)
       setLoadingSession(false)
 
+      // Only need id/topic/date for the list — no need to pull full content.
       const { data } = await supabase
         .from('roadmaps')
-        .select('id, topic, content, created_at')
+        .select('id, topic, created_at')
         .order('created_at', { ascending: false })
-      if (data) {
-        setSavedRoadmaps(data as RoadmapRow[])
-        const returnId = searchParams.get('roadmapId')
-        if (returnId) {
-          const match = (data as RoadmapRow[]).find(r => r.id === returnId)
-          if (match) setActiveRoadmap(match)
-        }
-      }
+      if (data) setSavedRoadmaps(data as RoadmapRow[])
 
       fetch('/api/stats')
         .then((r) => r.json())
@@ -80,12 +65,11 @@ function HomeContent() {
         body: JSON.stringify({ topic }),
       })
       if (!res.ok) throw new Error('Request failed')
-      const newRow: RoadmapRow = await res.json()
-      setSavedRoadmaps(prev => [newRow, ...prev])
-      setActiveRoadmap(newRow)
+      const newRow: { id: string } = await res.json()
+      // Go straight to the new roadmap's own page.
+      router.push(`/roadmap/${newRow.id}`)
     } catch {
       setError('Something went wrong generating your roadmap. Try again.')
-    } finally {
       setGenerating(false)
     }
   }
@@ -148,70 +132,32 @@ function HomeContent() {
 
       {error && <p style={{ color: '#F26D3D' }}>{error}</p>}
 
-      {activeRoadmap && (
-        <div style={{ marginTop: 30 }}>
-          <h2>{activeRoadmap.content.topic}</h2>
-          {activeRoadmap.content.modules.map((mod, i) => (
-            <div key={i} style={{ marginBottom: 20, padding: 16, border: '1px solid #eee', borderRadius: 8 }}>
-              <h3 style={{ margin: '0 0 4px' }}>{mod.title}</h3>
-              <p style={{ margin: '0 0 12px', color: '#666' }}>{mod.description}</p>
-              <ul style={{ margin: 0, paddingLeft: 20 }}>
-                {mod.submodules.map((sub, j) => (
-                  <li key={j} style={{ marginBottom: 6 }}>
-                    <Link
-                      href={`/learn/${activeRoadmap.id}/${i}/${j}`}
-                      className="font-semibold text-primary hover:underline"
-                    >
-                      {sub.title}
-                    </Link>
-                    {' — '}{sub.summary}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      )}
-
       {savedRoadmaps.length > 0 && (
         <div style={{ marginTop: 40 }}>
           <h2 style={{ fontSize: 18, marginBottom: 12 }}>Your roadmaps</h2>
           {savedRoadmaps.map((r) => (
-            <button
+            <Link
               key={r.id}
-              onClick={() => setActiveRoadmap(r)}
+              href={`/roadmap/${r.id}`}
               style={{
                 display: 'block',
-                width: '100%',
-                textAlign: 'left',
                 padding: '10px 14px',
                 marginBottom: 8,
-                background: activeRoadmap?.id === r.id ? '#EDE6FF' : '#F8F5FF',
-                border: activeRoadmap?.id === r.id ? '1px solid #7941F2' : '1px solid #E2D9F3',
+                background: '#F8F5FF',
+                border: '1px solid #E2D9F3',
                 borderRadius: 6,
-                cursor: 'pointer',
+                textDecoration: 'none',
+                color: 'inherit',
               }}
             >
               <strong>{r.topic}</strong>
               <span style={{ color: '#999', fontSize: 12, marginLeft: 10 }}>
                 {new Date(r.created_at).toLocaleDateString()}
               </span>
-            </button>
+            </Link>
           ))}
         </div>
       )}
     </div>
-  )
-}
-
-export default function Home() {
-  return (
-    <Suspense fallback={
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <span className="loader" />
-      </div>
-    }>
-      <HomeContent />
-    </Suspense>
   )
 }
