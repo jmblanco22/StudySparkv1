@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { generateText } from 'ai'
-import { searchPhoto } from '@/lib/unsplash'
 
 const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY })
 
@@ -48,7 +47,8 @@ export async function GET(req: Request) {
       submoduleTitle: sub.title,
     })
   }
- const figuresBlock = sub.visual
+
+  const figuresBlock = sub.visual
     ? `
 
 FIGURES:
@@ -61,46 +61,31 @@ Where a visual would genuinely help, insert a placeholder on its own line, exact
 - If you can't name a concrete photographable subject, omit the figure.`
     : ''
 
-  // Generate micro-lecture
+  // Generate micro-lecture (placeholders are left IN the text — the client resolves them)
   let text: string
   try {
     const result = await generateText({
       model: openrouter.chat('deepseek/deepseek-v4-flash'),
-     prompt: `Write a concise micro-lecture on "${sub.title}" within the module "${mod.title}".
+      prompt: `Write a concise micro-lecture on "${sub.title}" within the module "${mod.title}".
 Context: ${sub.summary}
+
+The learner's original request was: "${roadmap.content.topic}".
+Adapt the depth and tone to that request. If it signals a beginner ("intro," "basics," "how do I," "for beginners"), explain simply with everyday language and concrete examples, and assume no prior knowledge. 
+If it signals an advanced learner ("advanced," "deep dive," "in depth"), go deeper and assume fundamentals are known. 
+If there's no signal, aim for a motivated beginner.
+
 Format as markdown: use ## subheadings, bullet points where helpful, and end with a ## Key Takeaway section.
 Do NOT include a title heading at the start — jump straight into the content.
-Length: 300–500 words. Be clear, educational, and direct.${figuresBlock}`,
+Length: 300–500 words. Be clear, educational, and direct.${figuresBlock}
+For any mathematical expressions, use LaTeX syntax: wrap inline math in single dollar signs ($...$) and standalone equations in double dollar signs ($$...$$). Do NOT put math in backticks or code blocks. Example: write $f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}$ instead of using backticks.`,
     })
     text = result.text
   } catch (err) {
     console.error('Lecture generation failed:', err)
     return Response.json({ error: 'Failed to generate lecture' }, { status: 500 })
   }
-  // Find every placeholder. Group 1 = search query, group 2 = caption.
-  const figureRegex = /\[FIGURE:\s*([^|\]]+)\|\s*([^\]]+)\]/g
-  const figures = [...text.matchAll(figureRegex)]
 
-  if (figures.length > 0) {
-    // Look up all images at the same time (not one after another).
-    const urls = await Promise.all(
-      figures.map((f) => searchPhoto(f[1].trim()))
-    )
-
-    // Swap each placeholder for an image, or remove it if no image was found.
-    figures.forEach((figure, i) => {
-      const fullPlaceholder = figure[0]   // the whole [FIGURE: ...] text
-      const caption = figure[2].trim()
-      const url = urls[i]
-
-      text = text.replace(
-        fullPlaceholder,
-        url ? `![${caption}](${url})` : ''
-      )
-    })
-  }
-
-  // Save to cache
+  // Save to cache WITH placeholders still in it — the client swaps in images and re-saves.
   const { error: insertError } = await supabase
     .from('lectures')
     .insert({

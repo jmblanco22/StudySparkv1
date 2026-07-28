@@ -42,7 +42,14 @@ export async function POST(req: Request) {
       model: openrouter.chat('deepseek/deepseek-v4-flash'),
       schema: roadmapSchema,
       prompt: `Create a structured learning roadmap for someone who wants to learn: "${topic}".
-- Break it into 3-5 modules, ordered so each builds on the previous.
+
+First, judge the scope of what the learner asked for, and size the roadmap to match:
+- A narrow, simple, or single-skill request (e.g. "how to add two numbers," "what is a noun," "how to tie a shoe") → 1-2 modules with a few submodules. Do NOT pad a small question into a full course.
+- A moderate topic (e.g. "basic photography," "intro to chess") → 2-3 modules.
+- A broad subject (e.g. "calculus," "web development," "organic chemistry") → 4-5 modules.
+Match the structure to what was actually asked. Never inflate a small question into a large roadmap.
+
+- Order modules so each builds on the previous.
 - Each module has 2-4 bite-sized submodules.
 - Keep titles short and every description to one sentence.
 - Set "visual" to true ONLY if this submodule teaches something that can be literally photographed: a physical object, material, tool, place, or a person performing a hands-on activity.

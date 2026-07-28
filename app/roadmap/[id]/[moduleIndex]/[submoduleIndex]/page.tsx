@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import remarkGfm from 'remark-gfm'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
 
 type LectureData = {
   content: string
@@ -21,6 +25,7 @@ export default function LecturePage() {
   const { id: roadmapId, moduleIndex, submoduleIndex } = params as Record<string, string>
   const quizHref = `/roadmap/${roadmapId}/${moduleIndex}/${submoduleIndex}/quiz`
 
+  // Load the lecture text.
   useEffect(() => {
     const url = `/api/lecture?roadmapId=${roadmapId}&moduleIndex=${moduleIndex}&submoduleIndex=${submoduleIndex}`
 
@@ -34,6 +39,48 @@ export default function LecturePage() {
       .catch(() => setError('Something went wrong loading this lecture. Try again.'))
       .finally(() => setLoading(false))
   }, [params, router])
+
+  // After the text loads, resolve any [FIGURE:...] placeholders into images.
+  useEffect(() => {
+    if (!lecture) return
+    const figureRegex = /\[FIGURE:\s*([^|\]]+)\|\s*([^\]]+)\]/g
+    const figures = [...lecture.content.matchAll(figureRegex)]
+    if (figures.length === 0) return  // nothing to do (and prevents an infinite loop)
+
+    let cancelled = false
+    ;(async () => {
+      // Fetch every image in parallel.
+      const urls = await Promise.all(
+        figures.map(async (f) => {
+          try {
+            const res = await fetch(`/api/image?query=${encodeURIComponent(f[1].trim())}`)
+            const { url } = await res.json()
+            return url as string | null
+          } catch {
+            return null
+          }
+        })
+      )
+
+      // Swap each placeholder for an image, or remove it if none was found.
+      let updated = lecture.content
+      figures.forEach((f, i) => {
+        updated = updated.replace(f[0], urls[i] ? `![${f[2].trim()}](${urls[i]})` : '')
+      })
+
+      if (cancelled) return
+      setLecture({ ...lecture, content: updated })
+
+      // Cache the finished version so the next visit is instant with images.
+      fetch('/api/lecture/save-images', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roadmapId, moduleIndex, submoduleIndex, content: updated }),
+      }).catch(() => null)
+    })()
+
+    return () => { cancelled = true }
+  }, [lecture?.content, roadmapId, moduleIndex, submoduleIndex])
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
@@ -56,7 +103,7 @@ export default function LecturePage() {
           <p className="text-sm text-gray-500 mb-1">{lecture.moduleTitle}</p>
           <h1 className="text-2xl font-bold mb-6">{lecture.submoduleTitle}</h1>
           <div className="prose prose-neutral max-w-none">
-            <ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
               {lecture.content.replace(/^#{1,6}\s+.+\n?/, '')}
             </ReactMarkdown>
           </div>
