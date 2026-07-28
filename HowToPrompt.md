@@ -1,60 +1,58 @@
 # What Building an AI Study App Taught Me About Prompting
  
-When I started building StudySpark, I thought prompting was about writing better instructions. Say what you want clearly enough, and the model does it. A few weeks of building AI-generated lectures taught me that's mostly wrong — or at least, it's the least interesting half of the story.
- 
-Here's the thing nobody told me: **my best prompting fixes weren't prompts at all.** Every hard problem I hit, I first tried to solve by wording the instruction more carefully. And I kept losing. The fixes that actually worked came from changing the structure *around* the prompt, not the prompt itself. This is the story of how I learned that, one failure at a time.
+The idea I had when I began building StudySpark was that prompting was about improving my instructions. Just make sure that you say what you mean and the model will do it for you. Weeks spent developing machine learning lectures proved me that the vast majority of the time, this notion is false or, at least, this approach only touches upon half of the truth.
+
+The most important thing I have learned but no one told me back then was that all of my **best prompting solutions were not actually the solutions to the prompts.** Whenever there was something wrong, I would try to resolve the issue by adjusting my instructions and failed every single time.
  
 ## First: stop hoping the AI formats things right
  
-StudySpark turns any topic into a roadmap of modules, then generates a micro-lecture and a quiz for each one. The roadmap and quizzes need a strict shape — a list of modules, each with submodules; a quiz with exactly four questions and four options each. My first instinct was to *ask* for that shape in the prompt: "return JSON with these fields."
+StudySpark takes any subject and creates a roadmap for you consisting of modules and creates a micro-lecture and a quiz for each module. Roadmap and quizzes have to be of a specific structure: a list of modules each having sub-modules; quiz containing four questions each with four options. My initial reaction was to *tell* the model what structure I needed in the prompt:
+"return JSON containing these fields"
+
+It will work till it doesn't because sometimes the model returns an additional field or adds a code fence or leaves out a comma.
  
-That works until it doesn't. The model returns an extra field, or wraps the JSON in a code fence, or drops a comma, and your app crashes trying to parse it.
- 
-The real fix was a Zod schema passed to the AI SDK's `generateObject`. Instead of asking for a shape and hoping, the schema *forces* it — the model's output is validated against a strict structure before my code ever touches it. If it comes back malformed, it fails loudly and immediately, not three screens later.
+In reality, the solution was the Zod schema that was sent to the generateObject function of the AI SDK. Rather than requesting a shape and hoping for the best, the schema *guarantees* the shape – the output of the model is checked against a specific schema before being accessed by my code.
  
 That was lesson one, and it reframed everything after: **if the problem is about format, fix it in code, not in the prompt.** Don't ask the model to be well-behaved. Make well-behaved the only option.
  
 ## The detour I had to throw away
  
-For lectures on procedural topics — folding origami, tying a knot — I wanted diagrams. So I told the model to emit Mermaid, a text-based diagram syntax, and rendered it on the page.
- 
-It worked maybe one time in four. The rest of the time the model produced *almost*-valid Mermaid — a stray parenthesis in a label, a character that broke the parser — and the page showed "Syntax error in text."
- 
-I tightened the prompt. I gave it examples. I restricted it to the simplest possible syntax. The hit rate got a little better and stayed unreliable. Eventually I made a call I'm glad I made: I cut the feature entirely.
- 
-The lesson there is quieter but real: **some things the model just isn't reliable enough to do, and no prompt fixes that.** Knowing when to stop tuning and walk away is part of the skill. A feature that works 25% of the time in a live demo is worse than no feature.
+For procedural lectures about folding origami and tying knots, I needed diagrams. Thus, I prompted the model to output Mermaid, a diagramming syntax language expressed in text format, and rendered the diagrams on the page.
+
+It did what I wanted only once out of every four attempts. The rest of the time, the model returned Mermaid that was *almost* valid, a stray parenthesis here or a character that crashed the parser, and displayed the message "Syntax error in text" on the page.
+
+I tightened my prompts and added examples, and still only sometimes did I get the results I wanted. At some point, I made a decision I'm happy I made: I decided to abandon the feature.
+
+This one is a more subtle lesson: **there are things a language model simply isn't reliable enough to accomplish, no matter how much you prompt it.** It's part of the craft to know when to stop prompting and give up. A feature that works 25% of the time is worse than no feature.
  
 ## The metaphor problem, or: why you can't police the output
  
-This is the one that actually taught me something.
+I started putting pictures into lectures; the model left placeholders for a figure to go in, something like `[FIGURE: search query | caption]`, and I went out and found a picture for it. This was great for physical topics. I opened up a calculus lecture on "indeterminate forms" and got a picture of a **balance scale**.
  
-I added images to lectures — the model marks where a figure should go with a `[FIGURE: search query | caption]` placeholder, and I fetch a real photo for it. For physical topics it was great. Then I opened a calculus lecture on "indeterminate forms" and found a photo of a **balance scale**.
+The reasoning went like this: indeterminate forms are about *ambiguity*, and a balance scale *symbolizes* ambiguity. Photographable, and completely useless for teaching.
  
-The model had reasoned: indeterminate forms are about *ambiguity*, and a balance scale *represents* ambiguity. Technically photographable. Completely useless for studying.
+So I added a rule: only concrete objects, no abstract concepts. And for the next abstract lecture I tried, "slope of a tangent line," I got a picture of a **grass-covered hillside**. "Hill has a slope." I had been outsmarted by a loophole.
  
-So I added a rule: no abstract concepts, only concrete objects. Next abstract lecture, "the slope of a tangent line," gave me a photo of a **grassy hillside**. A hill has a slope. Loophole found.
+And so I tightened the rules; banned metaphorical concepts, made a list of common metaphors to ban (no light bulbs for "ideas," no mazes for "complexity"). And it helped, but I could feel it was going to happen; I was playing whack-a-mole against a model that *wanted* to illustrate and would always have another loophole.
  
-I tightened again — banned metaphors, listed specific clichés (no lightbulbs for "ideas," no mazes for "complexity"). It helped. But I could feel what was happening: I was playing whack-a-mole against a model that *wanted* to illustrate and would always find one more clever substitution. Every rule I wrote, it routed around.
+The problem wasn’t with a better rule. It was with understanding that I was fighting the battle at the wrong level.
  
-The fix wasn't a better rule. It was realizing I was fighting at the wrong layer.
+Rather than try to *detect* bad figures after the model made them, I decided to decide at an earlier point. Prior to generating a lecture, when StudySpark creates the roadmap (prior to the existence of any lecture), it designates whether the submodule is “visual” or not – only true for things literally able to be photographed, false otherwise. And then, when I generate a lecture, I add the figure instruction into the prompt at all only if the latter holds.
  
-Instead of trying to *catch* bad images after the model decided to make them, I moved the decision upstream. When StudySpark generates the roadmap — before any lecture exists — it now flags each submodule as visual or not: true only for things you can literally photograph, false for anything conceptual. Then, when I generate a lecture, I only include the figure instructions in the prompt *at all* if that flag is true.
+A model that has never been told about the existence of figures cannot devise metaphorical figures. Entire categories of the problem disappeared – not through finally writing the perfect rule but rather by not giving the model the opportunity to violate it.
  
-A model that is never told figures exist cannot invent a metaphorical one. The whole class of problem vanished — not because I finally wrote the perfect rule, but because I stopped giving the model the chance to break it.
- 
-That's the sentence I'd tattoo on the inside of my eyelids: **constrain the input, don't police the output.**
+That’s the sentence I’d have tattooed on the inside of my eyelids: **constrain the input, not the output.**
  
 ## Teaching the model to judge before it generates
  
-A smaller version of the same idea: I asked StudySpark "how do I do addition" and got a five-module curriculum on arithmetic. It padded a trivial question into a full course, because my roadmap prompt always asked for three to five modules.
- 
-The fix was to make the model *assess before producing*. The prompt now says, in effect: first judge the scope of what was asked — a tiny question gets one or two modules, a broad subject gets four or five — then build to match. Same instinct as the visual flag: put a judgment step in front of the generation step, rather than trying to correct the generation after the fact.
- 
+An even smaller instance of the same thing: when I asked StudySpark "how do I do addition," I received a five module curriculum about arithmetic. It took an incredibly simple request and turned it into a curriculum because my roadmap prompt always asked for three to five modules.
+
+How to fix it? Get the model to *evaluate before outputting*. The prompt now states, effectively, that the first step is to evaluate how broad the request is and give a proper number of modules based on that — either one or two for a small request and four or five for a larger one. The same intuition as the visual prompt but applied slightly differently: put an evaluation step before the output step rather than the other way around.
 ## Failing invisibly on purpose
  
-One last principle that runs through all of it. AI-generated content will sometimes be broken — a bad diagram, an image search that returns nothing. The question is what the user sees when that happens.
+And one more principle running throughout it all. Sometimes AI-generated content will be flawed – a misaligned diagram, a failed image search resulting in a blank slate. And the issue comes down to what the user is shown when this takes place.
  
-My answer, everywhere, became: nothing. A Mermaid diagram that won't parse renders as empty space, not an error. An image search that finds no match drops the figure silently, leaving clean prose instead of a broken-image icon. The failure still happens; it just isn't *visible*. In a live demo, "one fewer picture" is invisible. "A red error box on screen" is not.
+And my response to that, everywhere, was: nothing at all. A Mermaid diagram that doesn't parse simply fails as blank space; not an error message. An image search that produces no results is simply stripped of the image. The failure happens, but it doesn't happen *visibly*. In a demo, for instance, "one less image" is invisible. "An error message in red" is not.
  
 ## The framework I wish I'd had on day one
  
