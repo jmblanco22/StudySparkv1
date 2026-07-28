@@ -27,9 +27,9 @@ This one is a more subtle lesson: **there are things a language model simply isn
  
 ## The metaphor problem, or: why you can't police the output
  
-I started putting pictures into lectures; the model left placeholders for a figure to go in, something like `[FIGURE: search query | caption]`, and I went out and found a picture for it. This was great for physical topics. I opened up a calculus lecture on "indeterminate forms" and got a picture of a **balance scale**.
+I started putting pictures into lectures; the model left placeholders for a figure to go in, something like `[FIGURE: search query | caption]`, and I went out and found a picture for it. This was great for physical topics. I opened up a calculus lecture on "l'hopital's rule" and got a picture of a **balance scale**.
  
-The reasoning went like this: indeterminate forms are about *ambiguity*, and a balance scale *symbolizes* ambiguity. Photographable, and completely useless for teaching.
+The reasoning went like this: L'Hôpital's rule is about resolving ambiguous limits, and a balance scale symbolizes ambiguity. Photographable, and completely useless for teaching.
  
 So I added a rule: only concrete objects, no abstract concepts. And for the next abstract lecture I tried, "slope of a tangent line," I got a picture of a **grass-covered hillside**. "Hill has a slope." I had been outsmarted by a loophole.
  
@@ -47,10 +47,10 @@ That’s the sentence I’d have tattooed on the inside of my eyelids: **constra
  
 An even smaller instance of the same thing: when I asked StudySpark "how do I do addition," I received a five module curriculum about arithmetic. It took an incredibly simple request and turned it into a curriculum because my roadmap prompt always asked for three to five modules.
 
-How to fix it? Get the model to *evaluate before outputting*. The prompt now states, effectively, that the first step is to evaluate how broad the request is and give a proper number of modules based on that — either one or two for a small request and four or five for a larger one. The same intuition as the visual prompt but applied slightly differently: put an evaluation step before the output step rather than the other way around.
+How to fix it? Get the model to *evaluate before outputting*. The prompt now states, effectively, that the first step is to evaluate how broad the request is and give a proper number of modules based on that either one or two for a small request and four or five for a larger one. The same intuition as the visual prompt but applied slightly differently: put an evaluation step before the output step rather than the other way around.
 ## Failing invisibly on purpose
  
-And one more principle running throughout it all. Sometimes AI-generated content will be flawed – a misaligned diagram, a failed image search resulting in a blank slate. And the issue comes down to what the user is shown when this takes place.
+And one more principle running throughout it all. Sometimes AI-generated content will be flawed that could be a misaligned diagram, a failed image search resulting in a blank slate. And the issue comes down to what the user is shown when this takes place.
  
 And my response to that, everywhere, was: nothing at all. A Mermaid diagram that doesn't parse simply fails as blank space; not an error message. An image search that produces no results is simply stripped of the image. The failure happens, but it doesn't happen *visibly*. In a demo, for instance, "one less image" is invisible. "An error message in red" is not.
  
