@@ -1,32 +1,57 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
- @theme {
+@theme {
   /* Neutrals */
-  --color-background: #F8F5FF;
-  --color-surface:    #ffffff;
-  --color-foreground: #1e293b;
-  --color-muted:      #64748b;
-  --color-border:     #E2D9F3;
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-foreground: #1a1f2e;      /* near-black headings/body */
+  --color-muted: #6b7280;           /* secondary text */
+  --color-border: #d9dde3;          /* card outlines */
 
-  /* Deep purple — buttons, links, active states */
-  --color-primary:    #7941F2;
+  /* Brand */
+  --color-primary: #3b6b96;         /* navy — main actions, module cards */
+  --color-accent-blue: #3b6b96;     /* steel blue — nav, auth buttons */
+  --color-soft: #e8eef4;            /* the signature soft-blue card fill */
+  --color-soft-border: #c3cfdb;     /* soft card border */
 
-  /* Soft purple — secondary highlights */
-  --color-secondary:  #B17EBF;
+  /* Semantic */
+  --color-success: #16a34a;
+  --color-gold: #f5c518;            /* streak star / points */
+  --color-danger: #dc2626;
 
-  /* Light blue — info */
-  --color-info:       #9BD1F2;
-
-  /* Yellow — accent / CTA */
-  --color-accent:     #F2CF63;
-
-  /* Orange — incorrect answers, errors */
-  --color-danger:     #F26D3D;
-
-  /* Green — correct answers, streaks, points */
-  --color-success:    #16a34a;
+  /* Radius */
+  --radius-card: 16px;
+  --radius-btn: 12px;
 }
+
+/* The signature soft-blue info card */
+.card-soft {
+  background: var(--color-soft);
+  border: 1px solid var(--color-soft-border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem 1.5rem;
+}
+
+/* A plain white outlined card (roadmap modules, quiz questions) */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem 1.5rem;
+}
+
+/* Primary navy button */
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-btn);
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+}
+.btn-primary:hover { opacity: 0.9; }
+
+
 
 body {
   background: var(--color-background);

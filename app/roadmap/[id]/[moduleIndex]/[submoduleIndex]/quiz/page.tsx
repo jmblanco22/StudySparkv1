@@ -1,5 +1,5 @@
 'use client'
-
+import LeaderboardList, { type LeaderboardEntry } from '@/app/components/LeaderboardList'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -38,6 +38,9 @@ export default function QuizPage() {
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<ResultData | null>(null)
 
+  const [board, setBoard] = useState<LeaderboardEntry[]>([])
+  const [myId, setMyId] = useState<string | null>(null)
+
   useEffect(() => {
     const url = `/api/quiz?roadmapId=${roadmapId}&moduleIndex=${moduleIndex}&submoduleIndex=${submoduleIndex}`
     fetch(url)
@@ -66,6 +69,11 @@ export default function QuizPage() {
       if (!res.ok) throw new Error('Submit failed')
       const data: ResultData = await res.json()
       setResult(data)
+      // Pull the leaderboard now — the attempt is saved, so my new points are counted.
+      fetch('/api/leaderboard')
+        .then((r) => r.json())
+        .then((lb) => { setBoard(lb.leaderboard); setMyId(lb.currentUserId) })
+        .catch(() => null)
     } catch {
       setError('Something went wrong submitting your answers.')
     } finally {
@@ -135,7 +143,21 @@ export default function QuizPage() {
           })}
         </div>
 
-        <div className="flex gap-3">  
+        {board.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold">Leaderboard</h2>
+              <Link href="/leaderboard" className="text-sm text-primary hover:underline">
+                View full →
+              </Link>
+            </div>
+            <div className="max-h-80 overflow-y-auto pr-1">
+              <LeaderboardList leaderboard={board} currentUserId={myId} scrollToMe />
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-3">
           {nextLectureHref ? (
             <Link href={nextLectureHref} className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90">
               Next lecture →

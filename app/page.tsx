@@ -80,82 +80,87 @@ export default function Home() {
     </div>
   )
 
-  return (
-    <div style={{ maxWidth: 700, margin: '60px auto', padding: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+return (
+    <div className="max-w-2xl mx-auto px-5 pt-14 pb-28">
+      <div className="flex justify-between items-center">
         <Image src="/Logo-StudySpark-rbg.png" alt="StudySpark" height={48} width={180} priority />
-        <div className="flex items-center gap-3">
-          <Link href="/leaderboard" className="text-sm text-primary hover:underline">
-            Leaderboard
-          </Link>
-          <button
-            onClick={async () => {
-              const supabase = createClient()
-              await supabase.auth.signOut()
-              router.replace('/login')
-            }}
-            style={{ padding: '6px 12px', background: '#F8F5FF', border: '1px solid #E2D9F3', borderRadius: 6 }}
-          >
-            Sign out
-          </button>
-        </div>
+        <button
+          onClick={async () => {
+            const supabase = createClient()
+            await supabase.auth.signOut()
+            router.replace('/login')
+          }}
+          className="px-3 py-1.5 rounded-lg text-sm border border-border hover:bg-soft"
+        >
+          Sign out
+        </button>
       </div>
-      <p style={{ color: '#666' }}>Logged in as {email}</p>
+
+      <p className="text-muted mt-4">Logged in as {email}</p>
 
       {stats && (
-        <div className="flex gap-6 mt-3 text-sm text-gray-600">
-          <span className="font-medium text-success">{stats.streak}-day streak</span>
-          <span className="font-medium text-success">{stats.points} pts</span>
-          <span className="text-gray-400">{stats.totalQuizzes} quiz{stats.totalQuizzes !== 1 ? 'zes' : ''} completed</span>
-        </div>
-      )}
+  <div className="flex gap-6 mt-3 text-sm items-center">
+    <span className="flex items-center gap-1.5 font-semibold text-success">
+      <img src="/streak.svg" alt="" width={18} height={18}
+        style={{ filter: 'invert(41%) sepia(93%) saturate(500%) hue-rotate(85deg)' }} />
+      {stats.streak}-day streak
+    </span>
+    <span className="flex items-center gap-1.5 font-semibold" style={{ color: 'var(--color-gold)' }}>
+      <img src="/points.svg" alt="" width={18} height={18}
+        style={{ filter: 'invert(72%) sepia(85%) saturate(700%) hue-rotate(2deg)' }} />
+      {stats.points} pts
+    </span>
+    <span className="text-muted">
+      {stats.totalQuizzes} quiz{stats.totalQuizzes !== 1 ? 'zes' : ''} completed
+    </span>
+  </div>
+)}
 
-      <div style={{ marginTop: 30 }}>
-        <p>What do you want to learn?</p>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <input
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !generating && topic.trim() && generateRoadmap()}
-            placeholder="e.g. Calculus derivatives"
-            style={{ flex: 1, padding: 10 }}
-          />
-          <button
-            onClick={generateRoadmap}
-            disabled={generating || !topic.trim()}
-            style={{ padding: '10px 16px', background: '#7941F2', color: 'white', border: 'none', borderRadius: 6 }}
-          >
-            {generating ? 'Generating…' : 'Generate'}
-          </button>
-        </div>
+      <h1 className="text-3xl font-bold mt-10 mb-4">What do you want to learn?</h1>
+      <div className="flex gap-3">
+        <input
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && !generating && topic.trim() && generateRoadmap()}
+          placeholder="e.g. Calculus derivatives"
+          className="flex-1 px-4 py-3 rounded-xl border border-border focus:outline-none focus:border-primary"
+        />
+        <button
+          onClick={generateRoadmap}
+          disabled={generating || !topic.trim()}
+          style={{ background: '#3b6b96' }}
+          className="px-6 py-3 rounded-xl font-bold text-white hover:opacity-90"
+        >
+          {generating ? 'Generating…' : 'Generate'}
+        </button>
       </div>
 
-      {error && <p style={{ color: '#F26D3D' }}>{error}</p>}
+      {error && <p className="text-danger mt-3">{error}</p>}
 
       {savedRoadmaps.length > 0 && (
-        <div style={{ marginTop: 40 }}>
-          <h2 style={{ fontSize: 18, marginBottom: 12 }}>Your roadmaps</h2>
-          {savedRoadmaps.map((r) => (
-            <Link
-              key={r.id}
-              href={`/roadmap/${r.id}`}
-              style={{
-                display: 'block',
-                padding: '10px 14px',
-                marginBottom: 8,
-                background: '#F8F5FF',
-                border: '1px solid #E2D9F3',
-                borderRadius: 6,
-                textDecoration: 'none',
-                color: 'inherit',
-              }}
-            >
-              <strong>{r.topic}</strong>
-              <span style={{ color: '#999', fontSize: 12, marginLeft: 10 }}>
-                {new Date(r.created_at).toLocaleDateString()}
-              </span>
-            </Link>
-          ))}
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Recent roadmaps</h2>
+            {savedRoadmaps.length > 3 && (
+              <Link href="/roadmaps" className="text-sm text-accent-blue hover:underline font-medium">
+                View all →
+              </Link>
+            )}
+          </div>
+          <div className="space-y-3">
+            {savedRoadmaps.slice(0, 3).map((r) => (
+              <Link
+                key={r.id}
+                href={`/roadmap/${r.id}`}
+                className="card-soft block hover:opacity-90 transition"
+              >
+                <strong className="text-foreground">{r.topic}</strong>
+                <span className="text-muted text-xs ml-3">
+                  {new Date(r.created_at).toLocaleDateString()}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>
