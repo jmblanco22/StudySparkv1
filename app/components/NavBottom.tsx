@@ -9,7 +9,7 @@ export default function NavBottom() {
 
   const items = [
     { href: '/', label: 'Home', icon: '/home.svg' },
-    { href: '/roadmaps', label: 'View roadmaps', icon: '/roadmap.svg' },,
+    { href: '/roadmaps', label: 'View roadmaps', icon: '/roadmap.svg' },
     { href: '/leaderboard', label: 'Leaderboard', icon: '/leaderboard.svg' },
   ]
 
