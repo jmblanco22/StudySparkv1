@@ -14,18 +14,16 @@ export default function NavBottom() {
   ]
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 flex z-50"
-      style={{ background: '#3b6b96' }}
-    >
+    <nav className="fixed bottom-0 left-0 right-0 flex z-50 bg-primary">
       {items.map((item, i) => {
         const active = pathname === item.href
         return (
           <Link
             key={i}
             href={item.href}
-            className="flex-1 flex flex-col items-center gap-1 py-3 text-white text-sm"
-            style={{ background: active ? 'rgba(0,0,0,0.15)' : 'transparent' }}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 min-h-14 py-2 text-white text-xs sm:text-sm text-center ${
+              active ? 'bg-black/15' : 'bg-transparent'
+            }`}
           >
             <img
               src={item.icon}

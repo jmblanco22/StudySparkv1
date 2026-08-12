@@ -26,12 +26,12 @@ export default function LeaderboardPage() {
   }, [router])
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 pb-28">
       <Link href="/" className="text-sm text-primary hover:underline">
         ← Back to home
       </Link>
 
-      <h1 className="text-2xl font-bold mt-6 mb-8">Leaderboard</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mt-6 mb-8">Leaderboard</h1>
 
       {loading && <span className="loader" />}
       {error && <p className="text-red-600">{error}</p>}

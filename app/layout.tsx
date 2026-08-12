@@ -16,10 +16,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "StudySpark",
   icons: {
-    icon: [
-      { url: "/Logo-StudySpark-rbg.png", sizes: "32x32", type: "image/png" },
-      { url: "/Logo-StudySpark-rbg.png", sizes: "16x16", type: "image/png" },
-    ],
+    icon: "/favicons.ico",
+    shortcut: "/favicons.ico",
     apple: "/Logo-StudySpark-rbg.png",
   },
   description: "Your Study Buddy",

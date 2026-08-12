@@ -1,12 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+
+  // Already signed in (e.g. logged in from another tab, or navigated back here) — go home.
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.replace('/')
+    })
+  }, [router])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -31,9 +41,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
-      <h1>StudySpark</h1>
-      <p>Enter your email to get a magic link</p>
+    <div className="max-w-sm mx-auto mt-16 sm:mt-24 px-4 sm:px-6">
+      <h1 className="text-2xl sm:text-3xl font-bold">StudySpark</h1>
+      <p className="text-muted mt-2 mb-6">Enter your email to get a magic link</p>
       <form onSubmit={handleLogin}>
         <input
           type="email"
@@ -41,17 +51,17 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+          className="w-full min-h-11 px-4 py-3 rounded-xl border border-border mb-3 focus:outline-none focus:border-primary"
         />
         <button
           type="submit"
           disabled={loading}
-          style={{ width: '100%', padding: '10px', background: '#7941F2', color: 'white', border: 'none', borderRadius: 6 }}
+          className="btn-primary w-full min-h-11 disabled:opacity-40"
         >
           {loading ? 'Sending...' : 'Send Magic Link'}
         </button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <p className="mt-4 text-muted">{message}</p>}
     </div>
   )
 }

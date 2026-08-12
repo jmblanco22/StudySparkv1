@@ -88,7 +88,7 @@ export default function QuizPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-10 flex justify-center">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 flex justify-center">
         <span className="loader" />
       </div>
     )
@@ -96,11 +96,12 @@ export default function QuizPage() {
 
   if (error) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-10">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
         <p className="text-danger">{error}</p>
         <Link href={lectureHref} className="text-sm text-primary hover:underline mt-4 block">
           ← Back to lecture
         </Link>
+        <div aria-hidden="true" className="h-[300px] w-full shrink-0" />
       </div>
     )
   }
@@ -116,8 +117,8 @@ export default function QuizPage() {
         : null
 
     return (
-      <div className="max-w-2xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-bold mb-2">Quiz Results</h1>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Quiz Results</h1>
         <p className="text-4xl font-bold mb-1">{result.score}/{result.total}</p>
         <p className="text-gray-500 mb-6">{pct}% correct</p>
 
@@ -157,30 +158,32 @@ export default function QuizPage() {
           </div>
         )}
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {nextLectureHref ? (
-            <Link href={nextLectureHref} className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90">
+            <Link href={nextLectureHref} className="inline-flex items-center min-h-11 px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90">
               Next lecture →
             </Link>
           ) : null}
-          <button onClick={handleRetake} className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+          <button onClick={handleRetake} className="min-h-11 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
             Try again
           </button>
           <Link href={`/roadmap/${roadmapId}`} className="text-sm text-primary hover:underline">
-        ← Back to roadmap
-      </Link>
+            ← Back to roadmap
+          </Link>
         </div>
+
+        <div aria-hidden="true" className="h-[300px] w-full shrink-0" />
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
       <Link href={lectureHref} className="text-sm text-primary hover:underline">
         ← Back to lecture
       </Link>
 
-      <h1 className="text-2xl font-bold mt-6 mb-8">Quiz</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mt-6 mb-8">Quiz</h1>
 
       <div className="space-y-8">
         {quiz!.questions.map((q, i) => (
@@ -208,10 +211,12 @@ export default function QuizPage() {
       <button
         onClick={handleSubmit}
         disabled={!allAnswered || submitting}
-        className="mt-10 px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="mt-10 min-h-11 w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {submitting ? 'Submitting…' : 'Submit answers'}
       </button>
+
+      <div aria-hidden="true" className="h-[300px] w-full shrink-0" />
     </div>
   )
 }

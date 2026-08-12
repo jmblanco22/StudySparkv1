@@ -83,7 +83,7 @@ export default function LecturePage() {
   }, [lecture?.content, roadmapId, moduleIndex, submoduleIndex])
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       <Link href={`/roadmap/${roadmapId}`} className="text-sm text-primary hover:underline">
         ← Back to roadmap
       </Link>
@@ -101,8 +101,8 @@ export default function LecturePage() {
       {lecture && (
         <div className="mt-6">
           <p className="text-sm text-gray-500 mb-1">{lecture.moduleTitle}</p>
-          <h1 className="text-2xl font-bold mb-6">{lecture.submoduleTitle}</h1>
-          <div className="prose prose-neutral max-w-none">
+          <h1 className="text-2xl md:text-3xl font-bold mb-6">{lecture.submoduleTitle}</h1>
+          <div className="prose prose-neutral max-w-none prose-img:rounded-lg prose-img:max-w-full prose-pre:overflow-x-auto prose-table:block prose-table:overflow-x-auto">
             <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
               {lecture.content.replace(/^#{1,6}\s+.+\n?/, '')}
             </ReactMarkdown>
@@ -110,13 +110,15 @@ export default function LecturePage() {
           <div className="mt-10 pt-6 border-t border-gray-200">
             <Link
               href={quizHref}
-              className="inline-block px-5 py-3 bg-primary text-white rounded-lg hover:opacity-90 font-medium"
+              className="inline-flex items-center min-h-11 px-5 py-3 bg-primary text-white rounded-lg hover:opacity-90 font-medium"
             >
               Take quiz →
             </Link>
           </div>
         </div>
       )}
+
+      <div aria-hidden="true" className="h-[300px] w-full shrink-0" />
     </div>
   )
 }

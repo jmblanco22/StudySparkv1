@@ -49,33 +49,33 @@ export default function RoadmapPage() {
   }, [id, router])
 
   if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <div className="flex items-center justify-center h-screen">
       <span className="loader" />
     </div>
   )
 
   if (error || !roadmap) return (
-    <div style={{ maxWidth: 700, margin: '60px auto', padding: 20 }}>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-24">
       <Link href="/" className="text-sm text-primary hover:underline">← Back to dashboard</Link>
-      <p style={{ marginTop: 20, color: '#F26D3D' }}>{error || 'Roadmap not found.'}</p>
+      <p className="mt-5 text-danger">{error || 'Roadmap not found.'}</p>
     </div>
   )
 
   return (
-    <div style={{ maxWidth: 700, margin: '60px auto', padding: 20 }}>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-24">
       <Link href="/" className="text-sm text-primary hover:underline">← Back to dashboard</Link>
 
-      <h1 style={{ fontSize: 28, fontWeight: 700, margin: '20px 0 30px' }}>
+      <h1 className="text-2xl sm:text-3xl font-bold mt-5 mb-6 sm:mb-8">
         {roadmap.content.topic}
       </h1>
 
       {roadmap.content.modules.map((mod, i) => (
-        <div key={i} style={{ marginBottom: 20, padding: 16, border: '1px solid #eee', borderRadius: 8 }}>
-          <h3 style={{ margin: '0 0 4px' }}>{mod.title}</h3>
-          <p style={{ margin: '0 0 12px', color: '#666' }}>{mod.description}</p>
-          <ul style={{ margin: 0, paddingLeft: 20 }}>
+        <div key={i} className="card mb-5">
+          <h3 className="font-semibold text-base mb-1">{mod.title}</h3>
+          <p className="text-muted mb-3">{mod.description}</p>
+          <ul className="space-y-2 pl-5">
             {mod.submodules.map((sub, j) => (
-              <li key={j} style={{ marginBottom: 6 }}>
+              <li key={j}>
                 <Link
                   href={`/roadmap/${roadmap.id}/${i}-${slugify(mod.title)}/${j}-${slugify(sub.title)}`}
                   className="font-semibold text-primary hover:underline"

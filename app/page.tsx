@@ -75,31 +75,31 @@ export default function Home() {
   }
 
   if (loadingSession) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <div className="flex items-center justify-center h-screen">
       <span className="loader" />
     </div>
   )
 
 return (
-    <div className="max-w-2xl mx-auto px-5 pt-14 pb-28">
-      <div className="flex justify-between items-center">
-        <Image src="/Logo-StudySpark-rbg.png" alt="StudySpark" height={48} width={180} priority />
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-28">
+      <div className="flex justify-between items-center gap-3">
+        <Image src="/Logo-StudySpark-rbg.png" alt="StudySpark" height={48} width={180} priority className="h-9 sm:h-12 w-auto" />
         <button
           onClick={async () => {
             const supabase = createClient()
             await supabase.auth.signOut()
             router.replace('/login')
           }}
-          className="px-3 py-1.5 rounded-lg text-sm border border-border hover:bg-soft"
+          className="min-h-11 px-3 sm:px-4 rounded-lg text-sm border border-border hover:bg-soft shrink-0"
         >
           Sign out
         </button>
       </div>
 
-      <p className="text-muted mt-4">Logged in as {email}</p>
+      <p className="text-muted mt-4 text-sm sm:text-base break-words">Logged in as {email}</p>
 
       {stats && (
-  <div className="flex gap-6 mt-3 text-sm items-center">
+  <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3 text-sm items-center">
     <span className="flex items-center gap-1.5 font-semibold text-success">
       <img src="/streak.svg" alt="" width={18} height={18}
         style={{ filter: 'invert(41%) sepia(93%) saturate(500%) hue-rotate(85deg)' }} />
@@ -116,20 +116,19 @@ return (
   </div>
 )}
 
-      <h1 className="text-3xl font-bold mt-10 mb-4">What do you want to learn?</h1>
-      <div className="flex gap-3">
+      <h1 className="text-2xl md:text-3xl font-bold mt-8 sm:mt-10 mb-4">What do you want to learn?</h1>
+      <div className="flex flex-col sm:flex-row gap-3">
         <input
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !generating && topic.trim() && generateRoadmap()}
           placeholder="e.g. Calculus derivatives"
-          className="flex-1 px-4 py-3 rounded-xl border border-border focus:outline-none focus:border-primary"
+          className="flex-1 min-h-11 px-4 py-3 rounded-xl border border-border focus:outline-none focus:border-primary"
         />
         <button
           onClick={generateRoadmap}
           disabled={generating || !topic.trim()}
-          style={{ background: '#3b6b96' }}
-          className="px-6 py-3 rounded-xl font-bold text-white hover:opacity-90"
+          className="min-h-11 px-6 py-3 rounded-xl font-bold text-white bg-primary hover:opacity-90 disabled:opacity-40"
         >
           {generating ? 'Generating…' : 'Generate'}
         </button>
@@ -152,10 +151,10 @@ return (
               <Link
                 key={r.id}
                 href={`/roadmap/${r.id}`}
-                className="card-soft block hover:opacity-90 transition"
+                className="card-soft flex flex-wrap items-baseline gap-x-3 gap-y-1 hover:opacity-90 transition"
               >
                 <strong className="text-foreground">{r.topic}</strong>
-                <span className="text-muted text-xs ml-3">
+                <span className="text-muted text-xs">
                   {new Date(r.created_at).toLocaleDateString()}
                 </span>
               </Link>

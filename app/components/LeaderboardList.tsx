@@ -34,17 +34,17 @@ export default function LeaderboardList({
           <div
             key={entry.user_id}
             ref={isMe ? myRowRef : null}
-            className={`flex items-center gap-4 px-4 py-3 rounded-lg border ${
+            className={`flex items-center gap-2 sm:gap-4 min-h-11 px-3 sm:px-4 py-3 rounded-lg border ${
               isMe ? 'border-secondary/50 bg-secondary/10' : 'border-border bg-surface'
             }`}
           >
-            <span className="w-6 text-center text-sm font-medium text-gray-400">{i + 1}</span>
-            <span className={`flex-1 font-medium ${isMe ? 'text-primary' : ''}`}>
+            <span className="w-5 sm:w-6 text-center text-sm font-medium text-gray-400 shrink-0">{i + 1}</span>
+            <span className={`flex-1 min-w-0 truncate font-medium ${isMe ? 'text-primary' : ''}`}>
               {entry.display_name}
               {isMe && <span className="ml-2 text-xs text-secondary">(you)</span>}
             </span>
-            <span className="text-sm font-semibold">{entry.points} pts</span>
-            <span className="text-xs text-gray-400 w-24 text-right">
+            <span className="text-sm font-semibold shrink-0">{entry.points} pts</span>
+            <span className="text-xs text-gray-400 text-right shrink-0 whitespace-nowrap">
               {entry.total_quizzes} quiz{Number(entry.total_quizzes) !== 1 ? 'zes' : ''}
             </span>
           </div>

@@ -39,12 +39,12 @@ export default function RoadmapsPage() {
   )
 
   return (
-    <div className="max-w-2xl mx-auto px-5 pt-14 pb-28">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-28">
       <Link href="/" className="text-sm text-accent-blue hover:underline">
         ← Back to home
       </Link>
 
-      <h1 className="text-3xl font-bold mt-6 mb-8">Your roadmaps</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mt-6 mb-8">Your roadmaps</h1>
 
       {roadmaps.length === 0 ? (
         <p className="text-muted">No roadmaps yet. Generate one from the home page!</p>
@@ -54,10 +54,10 @@ export default function RoadmapsPage() {
             <Link
               key={r.id}
               href={`/roadmap/${r.id}`}
-              className="card-soft block hover:opacity-90 transition"
+              className="card-soft flex flex-wrap items-baseline gap-x-3 gap-y-1 hover:opacity-90 transition"
             >
               <strong className="text-foreground">{r.topic}</strong>
-              <span className="text-muted text-xs ml-3">
+              <span className="text-muted text-xs">
                 {new Date(r.created_at).toLocaleDateString()}
               </span>
             </Link>
