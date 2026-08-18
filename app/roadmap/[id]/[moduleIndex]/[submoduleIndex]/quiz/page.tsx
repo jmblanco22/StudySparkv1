@@ -3,6 +3,7 @@ import LeaderboardList, { type LeaderboardEntry } from '@/app/components/Leaderb
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { usePageContent } from '@/app/context/PageContentContext'
 
 type Question = {
   question: string
@@ -40,6 +41,14 @@ export default function QuizPage() {
 
   const [board, setBoard] = useState<LeaderboardEntry[]>([])
   const [myId, setMyId] = useState<string | null>(null)
+  const { setPageContent } = usePageContent()
+
+  // Keep the chat widget's page-awareness in sync — no per-submodule summary is
+  // fetched here, so just give it the roadmapId (enough for the tiered redirect logic).
+  useEffect(() => {
+    setPageContent({ type: 'roadmap', title: 'Quiz', content: '', roadmapId })
+    return () => setPageContent(null)
+  }, [roadmapId, setPageContent])
 
   useEffect(() => {
     const url = `/api/quiz?roadmapId=${roadmapId}&moduleIndex=${moduleIndex}&submoduleIndex=${submoduleIndex}`

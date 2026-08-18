@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBottom from "@/app/components/NavBottom";
+import ChatWidget from "@/app/components/ChatWidget";
+import { PageContentProvider } from "@/app/context/PageContentContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicons.ico",
     shortcut: "/favicons.ico",
-    apple: "/Logo-StudySpark-rbg.png",
+    apple: "/studysparklogoapp.png",
   },
   description: "Your Study Buddy",
 };
@@ -34,8 +36,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <NavBottom />
+        <PageContentProvider>
+          {children}
+          <NavBottom />
+          <ChatWidget />
+        </PageContentProvider>
       </body>
     </html>
   );

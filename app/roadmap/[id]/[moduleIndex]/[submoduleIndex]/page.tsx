@@ -8,11 +8,13 @@ import remarkMath from 'remark-math'
 import remarkGfm from 'remark-gfm'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
+import { usePageContent } from '@/app/context/PageContentContext'
 
 type LectureData = {
   content: string
   moduleTitle: string
   submoduleTitle: string
+  summary: string
 }
 
 export default function LecturePage() {
@@ -21,9 +23,27 @@ export default function LecturePage() {
   const [lecture, setLecture] = useState<LectureData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { setPageContent } = usePageContent()
 
   const { id: roadmapId, moduleIndex, submoduleIndex } = params as Record<string, string>
   const quizHref = `/roadmap/${roadmapId}/${moduleIndex}/${submoduleIndex}/quiz`
+
+  // Keep the chat widget's page-awareness in sync with the loaded lecture.
+  useEffect(() => {
+    if (!lecture) return
+    setPageContent({
+      type: 'lecture',
+      title: lecture.submoduleTitle,
+      content: lecture.content,
+      roadmapId,
+      summary: lecture.summary,
+    })
+  }, [lecture, roadmapId, setPageContent])
+
+  // Clear on unmount only (not on every lecture update) so navigating away resets it.
+  useEffect(() => {
+    return () => setPageContent(null)
+  }, [setPageContent])
 
   // Load the lecture text.
   useEffect(() => {

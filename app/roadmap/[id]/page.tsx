@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { slugify } from '@/lib/slug'
+import { usePageContent } from '@/app/context/PageContentContext'
 
 
 type Module = {
@@ -25,6 +26,24 @@ export default function RoadmapPage() {
   const [roadmap, setRoadmap] = useState<RoadmapRow | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { setPageContent } = usePageContent()
+
+  // Keep the chat widget's page-awareness in sync with the loaded roadmap.
+  useEffect(() => {
+    if (!roadmap) return
+    const summary = roadmap.content.modules
+      .map((mod, i) => {
+        const subs = mod.submodules.map((s) => `   - ${s.title}: ${s.summary}`).join('\n')
+        return `${i + 1}. ${mod.title} — ${mod.description}\n${subs}`
+      })
+      .join('\n')
+    setPageContent({ type: 'roadmap', title: roadmap.content.topic, content: summary, roadmapId: id })
+  }, [roadmap, id, setPageContent])
+
+  // Clear on unmount only (not on every roadmap update) so navigating away resets it.
+  useEffect(() => {
+    return () => setPageContent(null)
+  }, [setPageContent])
 
   useEffect(() => {
     const supabase = createClient()
@@ -42,8 +61,13 @@ export default function RoadmapPage() {
         .eq('id', id)
         .single()
 
-      if (data) setRoadmap(data as RoadmapRow)
-      else setError('Roadmap not found.')
+      if (data) {
+        setRoadmap(data as RoadmapRow)
+        // Fire-and-forget — bumps this roadmap to the top of "recently used" on the home page.
+        supabase.from('roadmaps').update({ last_opened_at: new Date().toISOString() }).eq('id', id).then()
+      } else {
+        setError('Roadmap not found.')
+      }
       setLoading(false)
     })
   }, [id, router])

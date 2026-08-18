@@ -45,6 +45,7 @@ export async function GET(req: Request) {
       content: cached.content,
       moduleTitle: mod.title,
       submoduleTitle: sub.title,
+      summary: sub.summary,
     })
   }
 
@@ -102,5 +103,6 @@ For any mathematical expressions, use LaTeX syntax: wrap inline math in single d
     content: text,
     moduleTitle: mod.title,
     submoduleTitle: sub.title,
+    summary: sub.summary,
   })
 }
