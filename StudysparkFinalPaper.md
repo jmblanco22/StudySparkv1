@@ -63,23 +63,33 @@ This report walks through StudySpark in that order: what it actually does today 
 
 Rather than describe the loop abstractly, here's one real run through it, using the strongest example StudySpark has generated — this walkthrough is the example the rest of the report refers back to.
 
-**[INSERT SCREENSHOT: the home/login screen, then the roadmap screen generated for your chosen example topic.]**
+![Home screen](homescreen.png)
+
+A learner starts here — type a topic (or upload notes, per §1) and hit Generate. While StudySpark writes the roadmap, a short loading state keeps the wait from feeling dead:
+
+![Loading state](TheLoaderBear.png)
 
 A learner types a topic — say, "Basic Derivatives" — and StudySpark returns a roadmap: a handful of modules (Limits, Power Rule, Product Rule), each broken into submodules, ordered so each one builds on the last.
 
-**[INSERT SCREENSHOT: opening a submodule and its generated micro-lecture — ideally one that shows both a figure and a rendered equation, so the format is visible in one shot.]**
+![Roadmap screen](roadmapscreen.png)
 
-Opening a submodule shows the micro-lecture itself: a short, plain-language explanation, and any math rendered as typeset equations rather than plain text. Occasionally you'll get a illustrated with a photo where a real image like the picture below
+Opening a submodule shows the micro-lecture itself: a short, plain-language explanation, with math rendered as typeset equations rather than plain text, and occasionally a photo where a real image adds something rather than distracts.
 
-**[INSERT SCREENSHOT: the quiz for that submodule, then the results/recap screen showing what was missed.]**
+![Example roadmap submodule](RoadmapEX.png)
 
-After reading, the learner takes a short quiz generated from that same lecture and gets an immediate recap of what they got right and wrong.
+After reading, the learner takes a short quiz generated from that same lecture:
 
-**[INSERT SCREENSHOT: the roadmap or dashboard view with the streak counter, points, and progress bar filled in from real use.]**
+![Quiz screen](QuizScreen.png)
+
+...and gets an immediate recap of what they got right and wrong.
+
+![Quiz results](Quiz Results.png)
 
 Each completed quiz updates a streak, a points total, and a position on a leaderboard shared with every other learner on StudySpark.
 
-That's the whole loop, and it's what's live today. It's worth being honest about the gap between that and the original vision: the formative research and the team's Figma prototype also called for things like an AI tutor chat inside every lecture ("explain this a different way") and friends-only leaderboards. Those are designed — in some cases down to the screen — but not built. Where this report says "StudySpark does X," it means the deployed app does X today. Where it says StudySpark was "meant to" or "designed to," that's the dream version. §7 is explicit about the distance between the two.
+![Leaderboard](Leaderboard.png)
+
+That's the whole loop, and it's what's live today. It's worth being honest about the gap between that and the original vision: the formative research and the team's Figma prototype also called for friends-only leaderboards — the current board is global, not scoped to people you know. That's designed but not built. Where this report says "StudySpark does X," it means the deployed app does X today. Where it says StudySpark was "meant to" or "designed to," that's the dream version. §7 is explicit about the distance between the two.
 
 ---
 
