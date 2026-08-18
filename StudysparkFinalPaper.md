@@ -2,31 +2,31 @@
 
 *A project report on what it takes to make a large language model reliably teach.*
 
-   
+---
 
 > **Note on placeholders:** Anywhere you see `[INSERT ...]`, that's a spot for you to drop in a code sample, a screenshot, or a diagram. I've written a description of exactly what goes there. Code blocks that are already filled in are pulled from the real project — verify them against your current files before submitting, since a few may have drifted.
 
-   
+---
 
 ## Table of Contents
 
-1. [Introduction](#1 introduction)
-2. [State of the System](#2 state of the system)
-3. [Core Technology & Architecture](#3 core technology  architecture)
+1. [Introduction](#1-introduction)
+2. [State of the System](#2-state-of-the-system)
+3. [Core Technology & Architecture](#3-core-technology--architecture)
      3.1 Core Technology
      3.2 Core Architecture
      3.3 Structured Output: Prove It, Don't Describe It
-4. [How StudySpark Generates a Micro Lecture](#4 how studyspark generates a micro lecture)
+4. [How StudySpark Generates a Micro Lecture](#4-how-studyspark-generates-a-micro-lecture)
      4.1 Stage 1 — Roadmap generation
      4.2 Stage 2 — Lecture generation
      4.3 Stage 3 — Figure resolution
-5. [The Iterations: Where It Went Wrong](#5 the iterations where it went wrong)
+5. [The Iterations: Where It Went Wrong](#5-the-iterations-where-it-went-wrong)
      5.1–5.4 The four failures
      5.5 Principles
-6. [What I'd Do Differently](#6 what id do differently)
-7. [Reflection & What's Next — StudySpark 2](#7 reflection  whats next  studyspark 2)
+6. [What I'd Do Differently](#6-what-id-do-differently)
+7. [Reflection & What's Next — StudySpark 2](#7-reflection--whats-next--studyspark-2)
 
-   
+---
 
 ## 1. Introduction
 
@@ -50,12 +50,12 @@ Picture this: you just sat through your one hour lecture. Your professor covered
 
 StudySpark fills that gap between what was taught and what actually stuck. Instead of re reading a wall of notes and hoping the missing piece turns up on its own, you ask, and you get an answer, not a summary of the whole lecture, but the specific piece you forgot. Now you can focus on what you missed and that question you wanted to ask but didn't have the time to ask. That's the promise, and it's also why the content behind it can't be something written in advance and handed to you, it has to be generated for the exact gap you have, at the moment you notice it.
 
-Two scenarios made this concrete for me while I was building it. First, similar to the one you just read: you missed a section of classsick, running late, whatever the reason, but your professor posted the slides and the agenda to Canvas anyway. You download the PDF, drop it into StudySpark, and go straight to the section you missed. What used to mean emailing the professor and waiting, or borrowing a classmate's notes and hoping they're readable and understandable, is now five minutes on your phone before your next class starts. 
-The next scenario had me thinking about the week before finals. You've been studying hard but for some reason the your memory box can't stay sharp and take in the months of information you're throwing into it. Luckily there's an app that allows you to open you phone and while you are on the bus ride back from the library, you skim the sections you'd flagged in your notes. Later, minutes before the exam, there's one concept that still isn't sitting right; you pull it up, read the micro lecture on it one more time, and walk in with it fresh. StudySpark isn't trying to replace the lecture. It's the thing you reach for when one or multiple pieces of the puzzle aren't clicking. 
+Two scenarios made this concrete for me while I was building it. First, similar to the one you just read: you missed a section of classsick, running late, whatever the reason, but your professor posted the slides and the agenda to Canvas anyway. You download the PDF, drop it into StudySpark, and go straight to the section you missed. What used to mean emailing the professor and waiting, or borrowing a classmate's notes and hoping they're readable and understandable, is now five minutes on your phone before your next class starts.
+The next scenario had me thinking about the week before finals. You've been studying hard but for some reason the your memory box can't stay sharp and take in the months of information you're throwing into it. Luckily there's an app that allows you to open you phone and while you are on the bus ride back from the library, you skim the sections you'd flagged in your notes. Later, minutes before the exam, there's one concept that still isn't sitting right; you pull it up, read the micro lecture on it one more time, and walk in with it fresh. StudySpark isn't trying to replace the lecture. It's the thing you reach for when one or multiple pieces of the puzzle aren't clicking.
 
 This report walks through StudySpark in that order: what it actually does today, the technology and the architecture I built it on, the pipeline that generates one micro lecture, what went wrong and what I learned fixing it, and where I'd take it next.
 
-   
+---
 
 ## 2. State of the System
 
@@ -71,7 +71,7 @@ Type a topic, lets say, "Basic Derivatives" and hit Generate. While StudySpark w
 
 ![Loading state](TheLoaderBear.png)
 
-Say hi to the Loader Bear! That's deliberate, not decorative. Roadmap generation is the one wait in the whole app that can't be hidden behind streaming text the model has to finish before there's anything to show. Rather than a blank screen or a generic spinner, a short animated loading bear  fills that gap so the wait registers as "working" instead of "stuck."
+Say hi to the Loader Bear! That's deliberate, not decorative. Roadmap generation is the one wait in the whole app that can't be hidden behind streaming text the model has to finish before there's anything to show. Rather than a blank screen or a generic spinner, a short animated loading bear fills that gap so the wait registers as "working" instead of "stuck."
 
 ![Roadmap screen](roadmapscreen.png)
 
@@ -93,8 +93,9 @@ After reading, the learner takes a short quiz generated from that same lecture, 
 
 Each completed quiz updates a streak, a points total, and a position on a leaderboard shared with every other learner on StudySpark.
 
-That's the whole loop, and it's what's live today. It's worth being honest about the gap between that and the original vision: the formative research and the team's Figma prototype also called for friends only leaderboards and the current board is global, not scoped to people you know. That's designed but not built. 
-   
+That's the whole loop, and it's what's live today. It's worth being honest about the gap between that and the original vision: the formative research and the team's Figma prototype also called for friends only leaderboards and the current board is global, not scoped to people you know. That's designed but not built.
+
+---
 
 ## 3. Core Technology & Architecture
 
@@ -103,7 +104,7 @@ That's the whole loop, and it's what's live today. It's worth being honest about
 ### 3.1 Core Technology
 
 | Layer | Choice | Why it's here |
-|   |   |   |
+|---|---|---|
 | Framework | **Next.js 16** (App Router, TypeScript) | API routes and pages in one codebase; server side rendering for the parts that need it |
 | Database & Auth | **Supabase** (Postgres + magic link auth) | Row level security out of the box, so a user can only ever read their own data |
 | LLM gateway | **OpenRouter** → DeepSeek V4 Flash | One API key for many models; you swap models by changing a single string |
@@ -121,9 +122,9 @@ Underneath the "AI product" framing, this is a fairly ordinary web architecture,
 
 The **frontend** is a Next.js client: pages and components that render in the browser and handle everything interactive navigating the roadmap, filling out a quiz, watching the progress bar move. It talks to the backend exclusively over a JSON API. The browser never talks to Supabase or to an LLM provider directly; every one of those calls is one hop further back than you might expect for an app this size, and that's deliberate too, for a few compounding reasons:
 
-  **Secrets.** The OpenRouter key that pays for every model call, and the Supabase service credentials, can only ever live server side. If either leaked into client code, anyone could read it and spend the project's money or read another learner's data.
-  **A single point of encapsulation for AI.** Routing every model call through OpenRouter from inside the backend means the model itself is just a config string (`deepseek/deepseek v4 flash`). Swapping it or paying for a stronger model on a route that needs it is a one line change, not a rewrite. The tradeoff is that the model is no longer a fixed, one time decision; it has to be planned for as an ongoing cost, and eventually as multiple paid providers with real financial exposure.
-  **Score integrity.** Every point, streak increment, and leaderboard row is written by server code that recomputes the quiz score itself from the learner's raw submitted answers the client never sends "I got an 80%," it sends the answers, and the server decides the score. A learner's browser is never a trusted source of their own grade.
+- **Secrets.** The OpenRouter key that pays for every model call, and the Supabase service credentials, can only ever live server side. If either leaked into client code, anyone could read it and spend the project's money or read another learner's data.
+- **A single point of encapsulation for AI.** Routing every model call through OpenRouter from inside the backend means the model itself is just a config string (`deepseek/deepseek v4 flash`). Swapping it or paying for a stronger model on a route that needs it is a one line change, not a rewrite. The tradeoff is that the model is no longer a fixed, one time decision; it has to be planned for as an ongoing cost, and eventually as multiple paid providers with real financial exposure.
+- **Score integrity.** Every point, streak increment, and leaderboard row is written by server code that recomputes the quiz score itself from the learner's raw submitted answers the client never sends "I got an 80%," it sends the answers, and the server decides the score. A learner's browser is never a trusted source of their own grade.
 
 None of this is glamorous, but it's the boundary the whole system is organized around, and it's what keeps the AI layer, the data layer, and the trust layer from leaking into each other.
 
@@ -157,7 +158,7 @@ Against that, here is the entire fix — one schema, handed to `generateObject`:
 
 ```ts
 const { object } = await generateObject({
-  model: openrouter.chat('deepseek/deepseek v4 flash'),
+  model: openrouter.chat('deepseek/deepseek-v4-flash'),
   schema: roadmapSchema,   // the strict shape from §4.1
   prompt,
 })
@@ -169,7 +170,7 @@ The takeaway for anyone building this: **if the problem is about format, solve i
 
 That validation is one layer among several in the boundary §3.2 described client, API route, Zod schema, database row level security. With that many layers stacked up, it's worth being explicit about which one Zod actually is: it's the layer that guarantees *shape*, not correctness or safety those are the API route's job and Supabase's job, respectively. Zod's specific responsibility is making sure that whatever the model decides to say, it says it in a shape the rest of the system can trust without inspecting it by hand. That trust is what makes the pipeline in §4 possible at all and it's also exactly where that pipeline started breaking in ways a schema *couldn't* fix, which is where §5 picks up.
 
-   
+---
 
 ## 4. How StudySpark Generates a Micro Lecture
 
@@ -187,19 +188,19 @@ The roadmap route takes the raw topic and returns a structured set of modules an
 
 ```
 First, judge the scope of what the learner asked for, and size the roadmap to match:
-  A narrow, simple, or single skill request → 1 2 modules with a few submodules.
-  A moderate topic → 2 3 modules.
-  A broad subject → 4 5 modules.
+- A narrow, simple, or single-skill request → 1-2 modules with a few submodules.
+- A moderate topic → 2-3 modules.
+- A broad subject → 4-5 modules.
 Match the structure to what was actually asked. Never inflate a small question into a large roadmap.
 ```
 
 **Visual ness.** Each submodule gets tagged, right here, as visual or not meaning "can this be literally photographed, or is it abstract?" This one boolean is what later lets me avoid asking for images on a calculus lecture (see §5.2). The instruction:
 
 ```
-  Set "visual" to true ONLY if this submodule teaches something that can be literally
+- Set "visual" to true ONLY if this submodule teaches something that can be literally
   photographed: a physical object, material, tool, place, or a person performing a
   hands on activity.
-  Set "visual" to false for anything conceptual, mathematical, theoretical, or symbolic.
+- Set "visual" to false for anything conceptual, mathematical, theoretical, or symbolic.
   When in doubt, use false.
 ```
 
@@ -250,10 +251,10 @@ const figuresBlock = sub.visual
 FIGURES:
 Where a visual would genuinely help, insert a placeholder on its own line, exactly:
 [FIGURE: search query | caption]
-  The query must name the ACTUAL physical thing being taught — the real object, tool,
+- The query must name the ACTUAL physical thing being taught — the real object, tool,
   material, or activity. Never a metaphor or symbolic stand in.
-  Include 1 3 figures, placed inline next to the text they illustrate.
-  If you can't name a concrete photographable subject, omit the figure.`
+- Include 1-3 figures, placed inline next to the text they illustrate.
+- If you can't name a concrete photographable subject, omit the figure.`
   : ''
 ```
 
@@ -310,7 +311,7 @@ useEffect(() => {
       updated = updated.replace(f[0], urls[i] ? `![${f[2].trim()}](${urls[i]})` : '')
     })
     setLecture({ ...lecture, content: updated })
-    fetch('/api/lecture/save images', { method: 'PATCH', /* … */ })
+    fetch('/api/lecture/save-images', { method: 'PATCH', /* … */ })
   })()
 }, [lecture?.content])
 ```
@@ -319,7 +320,7 @@ The `/api/image` route itself is a thin wrapper around Unsplash — the point is
 
 This staged design text now, images later, finished version cached is also what made lectures fast. Originally the route generated text, then waited on every image, then returned everything; you stared at a spinner through the whole thing. Splitting the slow part off and streaming it in behind the already visible text hid the wait.
 
-   
+---
 
 ## 5. The Iterations: Where It Went Wrong
 
@@ -331,7 +332,7 @@ Every hard problem in this project I first tried to fix by writing a better prom
 
 For procedural lectures I wanted diagrams, so I had the model emit Mermaid (a text diagram syntax) and rendered it. It produced *valid* Mermaid maybe one time in four. The rest of the time a stray character broke the parser and the page showed an error.
 
-**[INSERT SCREENSHOT:  didn't get to this.**]**
+**[INSERT SCREENSHOT: didn't get to this.]**
 
 I tightened the prompt, gave examples, restricted the syntax. The hit rate improved and stayed unreliable. Eventually I cut the feature. The lesson: **some things a model simply isn't reliable enough to do, and no prompt fixes that.** Knowing when to stop tuning and walk away is part of the skill a feature that works 25% of the time in a live demo is worse than no feature.
 
@@ -339,7 +340,7 @@ I tightened the prompt, gave examples, restricted the syntax. The hit rate impro
 
 When I added images, physical topics worked great. Then I opened a calculus lecture on L'Hôpital's rule and got a photo of a **balance scale**. The model had reasoned: L'Hôpital's rule resolves *ambiguous* limits, and a balance scale symbolizes ambiguity. Technically photographable. Useless for teaching.
 
-**[INSERT SCREENSHOT:  didn't get to this]**
+**[INSERT SCREENSHOT: didn't get to this]**
 
 So I added a rule: no abstract concepts, only concrete objects. The next abstract lecture "the slope of a tangent line" returned a photo of a **grassy hillside**. A hill has a slope. New loophole.
 
@@ -353,7 +354,7 @@ The fix wasn't a better rule it was realizing I was fighting at the wrong layer.
 
 ### 5.3 — Judge before it generates
 
-The scope problem (§4.1) is the same shape as the metaphor problem, in miniature. "How do I do addition" became a five module course because the model generated structure without first assessing how much structure the request deserved. The fix was to insert a *judgment step in front of the generation step*  assess scope, then build to fit rather than correcting the output afterward. Put a prejudgment before generative material, and you stop a whole category of bad output before it starts.
+The scope problem (§4.1) is the same shape as the metaphor problem, in miniature. "How do I do addition" became a five module course because the model generated structure without first assessing how much structure the request deserved. The fix was to insert a *judgment step in front of the generation step* assess scope, then build to fit rather than correcting the output afterward. Put a prejudgment before generative material, and you stop a whole category of bad output before it starts.
 
 ### 5.4 — Fail invisibly on purpose
 
@@ -368,29 +369,29 @@ The four failures above are specific. Two lessons underneath them are general en
 **Test the pipeline.** Nearly every failure above is really the same story: I thought it would work, I tested it, it didn't, I adjusted, I tested again. The Mermaid detour was test driven discovery that a feature was unreliable. Judge before generate came from testing at the extremes ("how do I do addition") and watching it break. Fail invisibly came from testing enough to notice a failure case existed. The lesson isn't "write careful prompts", it's "assume you're wrong about the model's behavior until you've tested the actual pipeline end to end."
 
 **A triage for prompting problems.** When something's wrong with generated output, ask which kind of problem it is:
-  A **format** problem (wrong shape, invalid structure) → fix it with a schema, not words.
-  A **content** problem (right shape, wrong substance) → *this* is where prompt wording earns its keep.
-  A **"the model keeps finding loopholes"** problem → stop writing rules and move the decision upstream, so the model is never offered the choice.
+- A **format** problem (wrong shape, invalid structure) → fix it with a schema, not words.
+- A **content** problem (right shape, wrong substance) → *this* is where prompt wording earns its keep.
+- A **"the model keeps finding loopholes"** problem → stop writing rules and move the decision upstream, so the model is never offered the choice.
 
 Most of my time went into that third category, and every time I wasted a day on rule writing before remembering the fix lived somewhere else.
 
-   
+---
 
 ## 6. What I'd Do Differently
 
 *Audience: process people. Job: hand them mistakes to skip.*
 
-  **Deploy and test in the deployed environment from day one, not just locally.** Several of my worst hours came from a green local build that failed in production — usually a missing environment variable or a case where the strict production build (`npm run build`) caught something the lenient dev server let slide. `npm run dev` and `npm run build` are different tools; I should have been running the strict one before every push much earlier.
-  **Decide the "visual or not" style question (constrain input vs. police output) before building the feature, not after three evenings of prompt patching.** The pattern is general enough that I'd now look for it at the start.
-  **Establish the design system before styling any screen.** I restyled several pages individually before formalizing color tokens, then had to redo them. Tokens first, screens second.
+- **Deploy and test in the deployed environment from day one, not just locally.** Several of my worst hours came from a green local build that failed in production — usually a missing environment variable or a case where the strict production build (`npm run build`) caught something the lenient dev server let slide. `npm run dev` and `npm run build` are different tools; I should have been running the strict one before every push much earlier.
+- **Decide the "visual or not" style question (constrain input vs. police output) before building the feature, not after three evenings of prompt patching.** The pattern is general enough that I'd now look for it at the start.
+- **Establish the design system before styling any screen.** I restyled several pages individually before formalizing color tokens, then had to redo them. Tokens first, screens second.
 
-   
+---
 
 ## 7. Reflection & What's Next — StudySpark 2
 
 *Audience: me, evaluators, and anyone funding a next phase. Job: an honest assessment first, then the concrete to do list that follows from it.*
 
-**How I Think It Turned Out.** StudySpark progressed from a Figma prototype and interviews with six people into a working application, alone, in one summer. It was successfully deployed and its loop of roadmap  > lecture  > quiz  > streak  > leaderboard functions end to end, while the design outlined in §3 proved robust against iteration rather than needing to be redone. I believe that it is a fully usable first implementation of a product and I would allow a student to use it right now. I do not believe that it is complete, and the following two sections will explain why.
+**How I Think It Turned Out.** StudySpark progressed from a Figma prototype and interviews with six people into a working application, alone, in one summer. It was successfully deployed and its loop of roadmap > lecture > quiz > streak > leaderboard functions end to end, while the design outlined in §3 proved robust against iteration rather than needing to be redone. I believe that it is a fully usable first implementation of a product and I would allow a student to use it right now. I do not believe that it is complete, and the following two sections will explain why.
 
 **Strengths.** The generation pipeline runs fast enough to provide a sense of immediacy, rather than of batching; a student receives a lecture in seconds, and not after some delay, which was the point of implementing an LLM over a curated or wiki model in the first place . The failure modes are graceful (§5.4): a failed diagram or an unavailability of an image fails silently, rather than throwing an error, and that matters far more in a live demo than almost any other feature I have implemented. And the schema first approach.
 
@@ -403,11 +404,12 @@ Most of my time went into that third category, and every time I wasted a day on 
 - **Friends-only leaderboards.** The current board is global; a real social graph (add friends, friend-scoped rankings) would sharpen the "am I studying more than my friends" motivation the research pointed to.
 - **Harder reliability guarantees on generated content** — an automated acceptance check that grades each lecture/quiz against criteria before it's shown, rather than my current manual spot-checks.
 - **Faster generation time.** Roadmap generation is still the one wait that can't be hidden behind streaming (§4.3, §7 weaknesses) a cold generation on a broad topic noticeably lags behind a narrow one. Worth investigating whether that's a prompt-size problem, a model-choice problem, or something worth parallelizing.
-   
+
+---
 
 ## Appendix — Repository & Live App
 
 **[INSERT LINKS — GitHub repo URL and live Vercel URL.]**
 
-  Live: [insert studyspark URL]
-  Source: [insert GitHub URL]
+- Live: [insert studyspark URL]
+- Source: [insert GitHub URL]
