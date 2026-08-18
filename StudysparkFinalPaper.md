@@ -65,13 +65,13 @@ Rather than describe the loop abstractly, here's one real run through it, using 
 
 ![Home screen](homescreen.png)
 
-This is where every session starts. On the left, your recent roadmaps pick one up where you left off. In the center, the generator: type a topic, or upload notes instead (§1). On the right, we have our Surprise Me button that randomly generates a topic and a short summary of what you'd learn, with a one tap "yes, build this roadmap" if it catches your interest. It's a small feature, but it's there for the moment you don't have a topic in mind and just want to learn something.
+This is where every session starts. On the left, your recent roadmaps pick one up where you left off. In the center, the generator: type a topic, or upload notes instead. On the right, we have our Surprise Me button that randomly generates a topic and a short summary of what you'd learn, with a one tap "yes, build this roadmap" if it catches your interest. It's a small feature, but it's there for the moment you don't have a topic in mind and just want to learn something.
 
 Type a topic, lets say, "Basic Derivatives" and hit Generate. While StudySpark writes the roadmap, this shows up:
 
 ![Loading state](TheLoaderBear.png)
 
-Say hi to the Loader Bear! That's deliberate, not decorative. Roadmap generation is the one wait in the whole app that can't be hidden behind streaming text (§4.3) the model has to finish before there's anything to show. Rather than a blank screen or a generic spinner, a short animated loading bear  fills that gap so the wait registers as "working" instead of "stuck."
+Say hi to the Loader Bear! That's deliberate, not decorative. Roadmap generation is the one wait in the whole app that can't be hidden behind streaming text the model has to finish before there's anything to show. Rather than a blank screen or a generic spinner, a short animated loading bear  fills that gap so the wait registers as "working" instead of "stuck."
 
 ![Roadmap screen](roadmapscreen.png)
 
@@ -115,11 +115,11 @@ That's the whole loop, and it's what's live today. It's worth being honest about
 
 ### 3.2 Core Architecture
 
-**[INSERT DIAGRAM: system architecture.** Four boxes left to right: *Browser (Next.js client)* → *Next.js API routes (server)* → *Supabase (Postgres + auth)*, with a fourth box off to the side, *OpenRouter → DeepSeek*, and a fifth, *Unsplash*, both reached only from the API routes box. Label each arrow with what actually crosses it: browser→API is "fetch, JSON body"; API→Supabase is "row scoped Postgres query"; API→OpenRouter is "prompt + Zod schema, returns a validated object." Draw a thick line on the browser↔API boundary specifically and label it: **"no secret ever crosses this line."** This diagram should function as a visual table of contents for this section — everything below is elaborating on one of its boxes or arrows.**]**
+![StudySpark system architecture](studyspark_system_architecture.png)
 
 Underneath the "AI product" framing, this is a fairly ordinary web architecture, and that's deliberate. A live product is not the place to experiment with unproven architecture it needs to keep changing as requirements change, and boring, well understood pieces change more safely than clever ones.
 
-The **frontend** is a Next.js client: pages and components that render in the browser and handle everything interactive — navigating the roadmap, filling out a quiz, watching the progress bar move. It talks to the backend exclusively over a JSON API. The browser never talks to Supabase or to an LLM provider directly; every one of those calls is one hop further back than you might expect for an app this size, and that's deliberate too, for a few compounding reasons:
+The **frontend** is a Next.js client: pages and components that render in the browser and handle everything interactive navigating the roadmap, filling out a quiz, watching the progress bar move. It talks to the backend exclusively over a JSON API. The browser never talks to Supabase or to an LLM provider directly; every one of those calls is one hop further back than you might expect for an app this size, and that's deliberate too, for a few compounding reasons:
 
   **Secrets.** The OpenRouter key that pays for every model call, and the Supabase service credentials, can only ever live server side. If either leaked into client code, anyone could read it and spend the project's money or read another learner's data.
   **A single point of encapsulation for AI.** Routing every model call through OpenRouter from inside the backend means the model itself is just a config string (`deepseek/deepseek v4 flash`). Swapping it or paying for a stronger model on a route that needs it is a one line change, not a rewrite. The tradeoff is that the model is no longer a fixed, one time decision; it has to be planned for as an ongoing cost, and eventually as multiple paid providers with real financial exposure.
@@ -129,9 +129,9 @@ None of this is glamorous, but it's the boundary the whole system is organized a
 
 ### 3.3 Structured Output: Prove It, Don't Describe It
 
-The foundational reliability decision in StudySpark is this: **never ask the model for a data shape and hope it complies — force the shape and validate it.** The Vercel AI SDK's `generateObject` plus a Zod schema does exactly that.
+The foundational reliability decision in StudySpark is this: **never ask the model for a data shape and hope it complies force the shape and validate it.** The Vercel AI SDK's `generateObject` plus a Zod schema does exactly that.
 
-Here is why it matters, shown rather than told. Without enforcement, asking a model to "return JSON with these fields" gets you output like this — technically an *attempt*, but unusable:
+Here is why it matters, shown rather than told. Without enforcement, asking a model to "return JSON with these fields" gets you output like this technically an *attempt*, but unusable:
 
 **Invalid example 1** — wrapped in a markdown fence with commentary, so `JSON.parse` throws immediately:
 
@@ -167,7 +167,7 @@ The model's response is now validated against `roadmapSchema` *before your code 
 
 The takeaway for anyone building this: **if the problem is about format, solve it in code with a schema, not in the prompt with polite instructions.** Don't ask the model to be well behaved. Make well behaved the only shape it's allowed to return.
 
-That validation is one layer among several in the boundary §3.2 described — client, API route, Zod schema, database row level security. With that many layers stacked up, it's worth being explicit about which one Zod actually is: it's the layer that guarantees *shape*, not correctness or safety those are the API route's job and Supabase's job, respectively. Zod's specific responsibility is making sure that whatever the model decides to say, it says it in a shape the rest of the system can trust without inspecting it by hand. That trust is what makes the pipeline in §4 possible at all — and it's also exactly where that pipeline started breaking in ways a schema *couldn't* fix, which is where §5 picks up.
+That validation is one layer among several in the boundary §3.2 described client, API route, Zod schema, database row level security. With that many layers stacked up, it's worth being explicit about which one Zod actually is: it's the layer that guarantees *shape*, not correctness or safety those are the API route's job and Supabase's job, respectively. Zod's specific responsibility is making sure that whatever the model decides to say, it says it in a shape the rest of the system can trust without inspecting it by hand. That trust is what makes the pipeline in §4 possible at all and it's also exactly where that pipeline started breaking in ways a schema *couldn't* fix, which is where §5 picks up.
 
    
 
@@ -177,7 +177,7 @@ That validation is one layer among several in the boundary §3.2 described — c
 
 Generating a single micro lecture is not one model call. It's a pipeline of three stages, and each stage's output constrains the next. The most important design decisions are about *where* in that pipeline each decision gets made.
 
-**[INSERT DIAGRAM: The micro lecture pipeline.** A left to right flowchart with three main boxes: (1) *Roadmap generation* — inputs "topic," outputs "modules → submodules, each tagged visual/not"; (2) *Lecture generation* — inputs the submodule + the visual flag, outputs "markdown with `[FIGURE: …]` placeholders"; (3) *Figure resolution* — inputs the placeholders, outputs "markdown with real image URLs." Draw a **dotted rectangle around each stage that happens inside a single LLM query context**, so the reader can see what the model sees in one shot versus what's passed forward between stages. Label the arrows between stages with the artifact that travels along them: "roadmap JSON," "lecture markdown + placeholders," "finished markdown." Boxes and arrows is fine; it does not need to be pretty.**]**
+![Micro-lecture generation pipeline](micro_lecture_pipeline.png)
 
 ### 4.1 Stage 1 — Roadmap generation, where scope and visual ness are decided
 
@@ -193,7 +193,7 @@ First, judge the scope of what the learner asked for, and size the roadmap to ma
 Match the structure to what was actually asked. Never inflate a small question into a large roadmap.
 ```
 
-**Visual ness.** Each submodule gets tagged, right here, as visual or not — meaning "can this be literally photographed, or is it abstract?" This one boolean is what later lets me avoid asking for images on a calculus lecture (see §5.2). The instruction:
+**Visual ness.** Each submodule gets tagged, right here, as visual or not meaning "can this be literally photographed, or is it abstract?" This one boolean is what later lets me avoid asking for images on a calculus lecture (see §5.2). The instruction:
 
 ```
   Set "visual" to true ONLY if this submodule teaches something that can be literally
@@ -242,7 +242,7 @@ Every submodule carries a `title`, a `summary`, and a `visual` flag together, on
 
 The lecture route generates the actual teaching text for one submodule. It does three things at once: it adapts depth to the learner, it only offers figures when the submodule was flagged visual, and it emits math as LaTeX.
 
-The figures instruction is *conditional* — it's only added to the prompt when `visual` is true. A model that is never told figures exist cannot invent one:
+The figures instruction is *conditional* it's only added to the prompt when `visual` is true. A model that is never told figures exist cannot invent one:
 
 ```ts
 const figuresBlock = sub.visual
@@ -274,13 +274,13 @@ For any mathematical expressions, use LaTeX syntax: wrap inline math in single d
 signs and standalone equations in double dollar signs. Do NOT use backticks.`
 ```
 
-Notice what the model *emits* for a figure: not an image, but a piece of intermediate syntax — `[FIGURE: search query | caption]`. This is the hand off point where the LLM stops and something ordinary takes over.
+Notice what the model *emits* for a figure: not an image, but a piece of intermediate syntax `[FIGURE: search query | caption]`. This is the hand off point where the LLM stops and something ordinary takes over.
 
 ### 4.3 Stage 3 — Figure resolution, where the LLM hands off to a plain search
 
-Every stage up to this point runs entirely on the server — the browser never sees a prompt, a schema, or a raw model response before the finished text arrives. This stage is the one exception, and it's worth pausing on, because it's a genuine pivot in who's driving the process, not just an implementation detail.
+Every stage up to this point runs entirely on the server the browser never sees a prompt, a schema, or a raw model response before the finished text arrives. This stage is the one exception, and it's worth pausing on, because it's a genuine pivot in who's driving the process, not just an implementation detail.
 
-The lecture is saved and returned to the browser with its `[FIGURE:…]` placeholders still sitting in the markdown, unresolved. The text renders on the page **immediately** — a learner starts reading within a second or two. Only after that does a client side effect take over: it finds every placeholder, resolves each into a real image in parallel over the network, swaps the results in, and pushes the finished version back to the server to cache. The reasoning was speed, not a preference for client side logic: image search is the slowest part of the entire pipeline, and there was no reason to make a learner stare at a blank page waiting on photos when the text — the part that actually teaches — was already finished. Broken into the three explicit steps the code below performs:
+The lecture is saved and returned to the browser with its `[FIGURE:…]` placeholders still sitting in the markdown, unresolved. The text renders on the page **immediately** a learner starts reading within a second or two. Only after that does a client side effect take over: it finds every placeholder, resolves each into a real image in parallel over the network, swaps the results in, and pushes the finished version back to the server to cache. The reasoning was speed, not a preference for client side logic: image search is the slowest part of the entire pipeline, and there was no reason to make a learner stare at a blank page waiting on photos when the text the part that actually teaches was already finished. Broken into the three explicit steps the code below performs:
 
 ```tsx
 useEffect(() => {
@@ -317,7 +317,7 @@ useEffect(() => {
 
 The `/api/image` route itself is a thin wrapper around Unsplash — the point is that **the "AI" figure feature is 80% a plain keyword search.** The model's only job was to decide *where* a figure belongs and *what* to search for; a non LLM API does the actual fetching.
 
-This staged design text now, images later, finished version cached — is also what made lectures fast. Originally the route generated text, then waited on every image, then returned everything; you stared at a spinner through the whole thing. Splitting the slow part off and streaming it in behind the already visible text hid the wait.
+This staged design text now, images later, finished version cached is also what made lectures fast. Originally the route generated text, then waited on every image, then returned everything; you stared at a spinner through the whole thing. Splitting the slow part off and streaming it in behind the already visible text hid the wait.
 
    
 
@@ -331,43 +331,41 @@ Every hard problem in this project I first tried to fix by writing a better prom
 
 For procedural lectures I wanted diagrams, so I had the model emit Mermaid (a text diagram syntax) and rendered it. It produced *valid* Mermaid maybe one time in four. The rest of the time a stray character broke the parser and the page showed an error.
 
-**[INSERT SCREENSHOT: a lecture showing "Syntax error in text" where a diagram should be.** You have this from testing; recreate it by feeding the renderer a slightly malformed Mermaid block if needed.**]**
+**[INSERT SCREENSHOT:  didn't get to this.**]**
 
-I tightened the prompt, gave examples, restricted the syntax. The hit rate improved and stayed unreliable. Eventually I cut the feature. The lesson: **some things a model simply isn't reliable enough to do, and no prompt fixes that.** Knowing when to stop tuning and walk away is part of the skill — a feature that works 25% of the time in a live demo is worse than no feature.
+I tightened the prompt, gave examples, restricted the syntax. The hit rate improved and stayed unreliable. Eventually I cut the feature. The lesson: **some things a model simply isn't reliable enough to do, and no prompt fixes that.** Knowing when to stop tuning and walk away is part of the skill a feature that works 25% of the time in a live demo is worse than no feature.
 
 ### 5.2 — The metaphor problem (the one that taught me the most)
 
 When I added images, physical topics worked great. Then I opened a calculus lecture on L'Hôpital's rule and got a photo of a **balance scale**. The model had reasoned: L'Hôpital's rule resolves *ambiguous* limits, and a balance scale symbolizes ambiguity. Technically photographable. Useless for teaching.
 
-**[INSERT SCREENSHOT: the L'Hôpital's rule lecture with the balance scale image.]**
+**[INSERT SCREENSHOT:  didn't get to this]**
 
-So I added a rule: no abstract concepts, only concrete objects. The next abstract lecture — "the slope of a tangent line" — returned a photo of a **grassy hillside**. A hill has a slope. New loophole.
+So I added a rule: no abstract concepts, only concrete objects. The next abstract lecture "the slope of a tangent line" returned a photo of a **grassy hillside**. A hill has a slope. New loophole.
 
-**[INSERT SCREENSHOT: the tangent line lecture with the hillside image.]**
+**[INSERT SCREENSHOT: didn't get to this]**
 
 I could feel what was happening: I was playing whack a mole against a model that *wanted* to illustrate and would always find one more clever substitution. Every rule I wrote, it routed around.
 
-The fix wasn't a better rule — it was realizing I was fighting at the wrong layer. Instead of trying to *catch* bad images after the model decided to make one, I moved the decision **upstream**. Roadmap generation now flags each submodule visual or not (§4.1), and the lecture prompt only mentions figures at all when that flag is true. A model never told figures exist cannot invent a metaphorical one. The entire class of problem vanished.
+The fix wasn't a better rule it was realizing I was fighting at the wrong layer. Instead of trying to *catch* bad images after the model decided to make one, I moved the decision **upstream**. Roadmap generation now flags each submodule visual or not, and the lecture prompt only mentions figures at all when that flag is true. A model never told figures exist cannot invent a metaphorical one. The entire class of problem vanished.
 
-**[INSERT DIAGRAM: policing the output vs. constraining the input.** Two rows. Top row (the broken approach): *Lecture prompt always mentions figures* → *model invents a metaphor* → *rule tries to catch it* → *loophole* — draw this as a loop that never closes. Bottom row (the fix): *Roadmap decides visual/not* → *lecture prompt only offers figures when visual=true* → *no metaphor possible* — a clean straight line. The visual point is that the decision moved to an earlier box.**]**
+![Policing the output vs. constraining the input](policing_vs_constraining.png)
 
 ### 5.3 — Judge before it generates
 
-The scope problem (§4.1) is the same shape as the metaphor problem, in miniature. "How do I do addition" became a five module course because the model generated structure without first assessing how much structure the request deserved. The fix was to insert a *judgment step in front of the generation step* — assess scope, then build to fit — rather than correcting the output afterward. Put a prejudgment before generative material, and you stop a whole category of bad output before it starts.
+The scope problem (§4.1) is the same shape as the metaphor problem, in miniature. "How do I do addition" became a five module course because the model generated structure without first assessing how much structure the request deserved. The fix was to insert a *judgment step in front of the generation step*  assess scope, then build to fit rather than correcting the output afterward. Put a prejudgment before generative material, and you stop a whole category of bad output before it starts.
 
 ### 5.4 — Fail invisibly on purpose
 
-AI generated content will sometimes be broken — a bad diagram, an image search that returns nothing. The question is what the user sees when it happens. My answer, everywhere, became: nothing. A Mermaid diagram that won't parse renders as empty space, not an error. An image search that finds no match drops the figure silently, leaving clean prose instead of a broken image icon (that's the `urls[i] ? … : ''` branch in the §4.3 code). The failure still happens; it just isn't *visible*. In a live demo, "one fewer picture" is invisible. "A red error box on screen" is not.
-
-**[INSERT DIAGRAM: evaluate before output.** A small pipeline: *generated content* → *validation check* → branch: valid → *show it*; invalid → *show nothing*. The point is that a validation component sits between generation and display, and the failure path leads to silence, not an error.**]**
+AI generated content will sometimes be broken a bad diagram, an image search that returns nothing. The question is what the user sees when it happens. My answer, everywhere, became: nothing. A Mermaid diagram that won't parse renders as empty space, not an error. An image search that finds no match drops the figure silently, leaving clean prose instead of a broken image icon (that's the `urls[i] ? … : ''` branch in the §4.3 code). The failure still happens; it just isn't *visible*. In a live demo, "one fewer picture" is invisible. "A red error box on screen" is not.
 
 ### 5.5 — Principles
 
-The four failures above are specific. Two lessons underneath them are general enough to hand to anyone building something similar — and I only found them by writing the first draft of this report; they were implicit in the work but I couldn't have stated them cleanly before.
+The four failures above are specific. Two lessons underneath them are general enough to hand to anyone building something similar and I only found them by writing the first draft of this report; they were implicit in the work but I couldn't have stated them cleanly before.
 
 **Trust, but verify.** This old software maxim turns out to unify most of what I learned. *Trust* is §5.2: you can't police the output, so you design constraints into the input and then trust the model to work within them. *Verify* is §5.4: even when you've built the system to be trustworthy, it will sometimes fail, so you always validate the output and handle the failure. And the schema work in §3.3 sits exactly between the two it's how you make an output you can trust *and* verify at the same moment.
 
-**Test the pipeline.** Nearly every failure above is really the same story: I thought it would work, I tested it, it didn't, I adjusted, I tested again. The Mermaid detour was test driven discovery that a feature was unreliable. Judge before generate came from testing at the extremes ("how do I do addition") and watching it break. Fail invisibly came from testing enough to notice a failure case existed. The lesson isn't "write careful prompts" — it's "assume you're wrong about the model's behavior until you've tested the actual pipeline end to end."
+**Test the pipeline.** Nearly every failure above is really the same story: I thought it would work, I tested it, it didn't, I adjusted, I tested again. The Mermaid detour was test driven discovery that a feature was unreliable. Judge before generate came from testing at the extremes ("how do I do addition") and watching it break. Fail invisibly came from testing enough to notice a failure case existed. The lesson isn't "write careful prompts", it's "assume you're wrong about the model's behavior until you've tested the actual pipeline end to end."
 
 **A triage for prompting problems.** When something's wrong with generated output, ask which kind of problem it is:
   A **format** problem (wrong shape, invalid structure) → fix it with a schema, not words.
@@ -394,17 +392,17 @@ Most of my time went into that third category, and every time I wasted a day on 
 
 **How I Think It Turned Out.** StudySpark progressed from a Figma prototype and interviews with six people into a working application, alone, in one summer. It was successfully deployed and its loop of roadmap  > lecture  > quiz  > streak  > leaderboard functions end to end, while the design outlined in §3 proved robust against iteration rather than needing to be redone. I believe that it is a fully usable first implementation of a product and I would allow a student to use it right now. I do not believe that it is complete, and the following two sections will explain why.
 
-**Strengths.** The generation pipeline runs fast enough to provide a sense of immediacy, rather than of batching; a student receives a lecture in seconds, and not after some delay, which was the point of implementing an LLM over a curated or wiki model in the first place (§1). The failure modes are graceful (§5.4): a failed diagram or an unavailability of an image fails silently, rather than throwing an error, and that matters far more in a live demo than almost any other feature I have implemented. And the schema first approach (§3.3, §4.1)
+**Strengths.** The generation pipeline runs fast enough to provide a sense of immediacy, rather than of batching; a student receives a lecture in seconds, and not after some delay, which was the point of implementing an LLM over a curated or wiki model in the first place . The failure modes are graceful (§5.4): a failed diagram or an unavailability of an image fails silently, rather than throwing an error, and that matters far more in a live demo than almost any other feature I have implemented. And the schema first approach.
 
-**Weaknesses — the ones I'm aware of and haven't fixed.** I don't know yet whether StudySpark is an effective tool for teaching. Every measure I am tracking — streaks, points, and quiz completion — gauges usage rather than performance improvement. I don't have any pre and post assessment data or retention rates to be able to tell whether a learner gets something useful after watching a lecture. This is the biggest question mark for my project at the moment. On the other hand, generation latency is not consistent: most of the time lectures get generated in a matter of a few seconds, but on occasion, the generation of a cold roadmap lecture for a topic may take a little longer, and my application does not communicate the delay at the moment. Finally, the images used in lectures, while no longer "incorrect" (§5.2), are still secondary. It's always going to be a contextual image alongside a paragraph, rather than a diagram specifically meant to instruct about a certain procedure or phenomenon. This is a content related drawback as much as it is a design one, as creating instructional diagrams was not in the scope of such a small project, both cost wise and in terms of development time.
+**Weaknesses — the ones I'm aware of and haven't fixed.** I don't know yet whether StudySpark is an effective tool for teaching. Every measure I am tracking streaks, points, and quiz completion — gauges usage rather than performance improvement. I don't have any pre and post assessment data or retention rates to be able to tell whether a learner gets something useful after watching a lecture. This is the biggest question mark for my project at the moment. On the other hand, generation latency is not consistent: most of the time lectures get generated in a matter of a few seconds, but on occasion, the generation of a cold roadmap lecture for a topic may take a little longer, and my application does not communicate the delay at the moment. Finally, the images used in lectures, while no longer "incorrect", are still secondary. It's always going to be a contextual image alongside a paragraph, rather than a diagram specifically meant to instruct about a certain procedure or phenomenon. This is a content related drawback as much as it is a design one, as creating instructional diagrams was not in the scope of such a small project, both cost wise and in terms of development time.
 
 **If I had another three months**, here's what StudySpark 2 looks like:
 
-  **File uploads.** Let a learner upload their own notes or a syllabus and generate a roadmap from *their* material rather than a topic string. This is the biggest lever on the original research goal.
-  **Step level visual aids for procedural topics.** Right now a figure illustrates a submodule; the harder, more valuable version matches an image to each *step* of a process. Stock photos can't do this well, so it likely means restructuring lecture generation into explicit steps.
-  **Friends only leaderboards.** The current board is global; a real social graph (add friends, friend scoped rankings) would sharpen the "am I studying more than my friends" motivation the research pointed to.
-  **Harder reliability guarantees on generated content** — an automated acceptance check that grades each lecture/quiz against criteria before it's shown, rather than my current manual spot checks.
-
+- **Make the micro-lectures less AI'e.** Right now, when you're read your content you can tell it is written by AI, I want it to feel more instructor like. Additionally, file upload feeds the *topic and structure* of a roadmap it doesn't change how the lecture itself is written. The next step is grounding the actual lecture text in a learner's own notes or syllabus, so the content reads like it was pulled from *their* material instead of generated fresh from a topic string every time. This is the biggest lever on the original research goal.
+- **Step-level visual aids for procedural topics.** Right now a figure illustrates a submodule; the harder, more valuable version matches an image to each *step* of a process. Stock photos can't do this well, so it likely means restructuring lecture generation into explicit steps.
+- **Friends-only leaderboards.** The current board is global; a real social graph (add friends, friend-scoped rankings) would sharpen the "am I studying more than my friends" motivation the research pointed to.
+- **Harder reliability guarantees on generated content** — an automated acceptance check that grades each lecture/quiz against criteria before it's shown, rather than my current manual spot-checks.
+- **Faster generation time.** Roadmap generation is still the one wait that can't be hidden behind streaming (§4.3, §7 weaknesses) a cold generation on a broad topic noticeably lags behind a narrow one. Worth investigating whether that's a prompt-size problem, a model-choice problem, or something worth parallelizing.
    
 
 ## Appendix — Repository & Live App
