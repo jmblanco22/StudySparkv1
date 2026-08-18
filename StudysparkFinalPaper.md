@@ -350,7 +350,7 @@ I could feel what was happening: I was playing whack a mole against a model that
 
 The fix wasn't a better rule it was realizing I was fighting at the wrong layer. Instead of trying to *catch* bad images after the model decided to make one, I moved the decision **upstream**. Roadmap generation now flags each submodule visual or not, and the lecture prompt only mentions figures at all when that flag is true. A model never told figures exist cannot invent a metaphorical one. The entire class of problem vanished.
 
-![Policing the output vs. constraining the input](policing_vs_constraining.png)
+![Policing the output vs. constraining the input](policing_output_vs_constraining.png)
 
 ### 5.3 — Judge before it generates
 
