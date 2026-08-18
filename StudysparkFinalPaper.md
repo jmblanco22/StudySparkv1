@@ -32,7 +32,7 @@
 
 *Audience: everyone. Job: introduce the project to a reader who has never seen it, and hook them with the central realization.*
 
-StudySpark is an online application designed for mobile phones that is built up of one feedback loop: you tell it what to teach you, and it teaches you. Type any topic — "basics of derivatives," "how to hit a golf ball," "Nikola Tesla biography" — and StudySpark will create for you a sequence of little lessons, each one based on the previous one.
+StudySpark is an online application designed for mobile phones that is built up of one feedback loop: you tell it what to teach you, and it teaches you. Type any topic "basics of derivatives," "how to hit a golf ball," "Nikola Tesla biography" and StudySpark will create for you a sequence of little lessons, each one based on the previous one.
 
 Each lesson is what I refer to as a **micro lecture**, a short explanation in clear language. You get your information on one precise topic, and it is about 300 to 500 words long. It is automatically generated just for you instead of being taken from some fixed textbooks. The format is chosen deliberately. While a lecture consists of an hour long content as it has to include all of it, a micro lecture includes only one concept because you do not need anything else. You do not read a whole chapter in hope of finding that one paragraph that you lack but get that paragraph exactly.
 
@@ -50,10 +50,10 @@ Picture this: you just sat through your one hour lecture. Your professor covered
 
 StudySpark fills that gap between what was taught and what actually stuck. Instead of re reading a wall of notes and hoping the missing piece turns up on its own, you ask, and you get an answer, not a summary of the whole lecture, but the specific piece you forgot. Now you can focus on what you missed and that question you wanted to ask but didn't have the time to ask. That's the promise, and it's also why the content behind it can't be something written in advance and handed to you, it has to be generated for the exact gap you have, at the moment you notice it.
 
-Two scenarios made this concrete for me while I was building it. First, similar to the one you just read: you missed a section of class — sick, running late, whatever the reason, but your professor posted the slides and the agenda to Canvas anyway. You download the PDF, drop it into StudySpark, and go straight to the section you missed. What used to mean emailing the professor and waiting, or borrowing a classmate's notes and hoping they're readable and understandable, is now five minutes on your phone before your next class starts. 
+Two scenarios made this concrete for me while I was building it. First, similar to the one you just read: you missed a section of classsick, running late, whatever the reason, but your professor posted the slides and the agenda to Canvas anyway. You download the PDF, drop it into StudySpark, and go straight to the section you missed. What used to mean emailing the professor and waiting, or borrowing a classmate's notes and hoping they're readable and understandable, is now five minutes on your phone before your next class starts. 
 The next scenario had me thinking about the week before finals. You've been studying hard but for some reason the your memory box can't stay sharp and take in the months of information you're throwing into it. Luckily there's an app that allows you to open you phone and while you are on the bus ride back from the library, you skim the sections you'd flagged in your notes. Later, minutes before the exam, there's one concept that still isn't sitting right; you pull it up, read the micro lecture on it one more time, and walk in with it fresh. StudySpark isn't trying to replace the lecture. It's the thing you reach for when one or multiple pieces of the puzzle aren't clicking. 
 
-This report walks through StudySpark in that order: what it actually does today (§2), the technology and the architecture I built it on (§3), the pipeline that generates one micro lecture (§4), what went wrong and what I learned fixing it (§5–6), and where I'd take it next (§7).
+This report walks through StudySpark in that order: what it actually does today, the technology and the architecture I built it on, the pipeline that generates one micro lecture, what went wrong and what I learned fixing it, and where I'd take it next.
 
    
 
@@ -65,7 +65,7 @@ Rather than describe the loop abstractly, here's one real run through it, using 
 
 ![Home screen](homescreen.png)
 
-This is where every session starts. On the left, your recent roadmaps — pick one up where you left off. In the center, the generator: type a topic, or upload notes instead (§1). On the right, we have our Surprise Me button that randomly generates a topic and a short summary of what you'd learn, with a one tap "yes, build this roadmap" if it catches your interest. It's a small feature, but it's there for the moment you don't have a topic in mind and just want to learn something.
+This is where every session starts. On the left, your recent roadmaps pick one up where you left off. In the center, the generator: type a topic, or upload notes instead (§1). On the right, we have our Surprise Me button that randomly generates a topic and a short summary of what you'd learn, with a one tap "yes, build this roadmap" if it catches your interest. It's a small feature, but it's there for the moment you don't have a topic in mind and just want to learn something.
 
 Type a topic, lets say, "Basic Derivatives" and hit Generate. While StudySpark writes the roadmap, this shows up:
 
@@ -98,7 +98,7 @@ That's the whole loop, and it's what's live today. It's worth being honest about
 
 ## 3. Core Technology & Architecture
 
-*Audience: process managers deciding what to build with, and coders who want to reproduce it. Job: document every moving piece, and — separately from that inventory — the shape of the system they fit into and why.*
+*Audience: process managers deciding what to build with, and coders who want to reproduce it. Job: document every moving piece, and — separately from that inventory the shape of the system they fit into and why.*
 
 ### 3.1 Core Technology
 
@@ -117,13 +117,13 @@ That's the whole loop, and it's what's live today. It's worth being honest about
 
 **[INSERT DIAGRAM: system architecture.** Four boxes left to right: *Browser (Next.js client)* → *Next.js API routes (server)* → *Supabase (Postgres + auth)*, with a fourth box off to the side, *OpenRouter → DeepSeek*, and a fifth, *Unsplash*, both reached only from the API routes box. Label each arrow with what actually crosses it: browser→API is "fetch, JSON body"; API→Supabase is "row scoped Postgres query"; API→OpenRouter is "prompt + Zod schema, returns a validated object." Draw a thick line on the browser↔API boundary specifically and label it: **"no secret ever crosses this line."** This diagram should function as a visual table of contents for this section — everything below is elaborating on one of its boxes or arrows.**]**
 
-Underneath the "AI product" framing, this is a fairly ordinary web architecture, and that's deliberate. A live product is not the place to experiment with unproven architecture — it needs to keep changing as requirements change, and boring, well understood pieces change more safely than clever ones.
+Underneath the "AI product" framing, this is a fairly ordinary web architecture, and that's deliberate. A live product is not the place to experiment with unproven architecture it needs to keep changing as requirements change, and boring, well understood pieces change more safely than clever ones.
 
 The **frontend** is a Next.js client: pages and components that render in the browser and handle everything interactive — navigating the roadmap, filling out a quiz, watching the progress bar move. It talks to the backend exclusively over a JSON API. The browser never talks to Supabase or to an LLM provider directly; every one of those calls is one hop further back than you might expect for an app this size, and that's deliberate too, for a few compounding reasons:
 
   **Secrets.** The OpenRouter key that pays for every model call, and the Supabase service credentials, can only ever live server side. If either leaked into client code, anyone could read it and spend the project's money or read another learner's data.
-  **A single point of encapsulation for AI.** Routing every model call through OpenRouter from inside the backend means the model itself is just a config string (`deepseek/deepseek v4 flash`). Swapping it — or paying for a stronger model on a route that needs it — is a one line change, not a rewrite. The tradeoff is that the model is no longer a fixed, one time decision; it has to be planned for as an ongoing cost, and eventually as multiple paid providers with real financial exposure.
-  **Score integrity.** Every point, streak increment, and leaderboard row is written by server code that recomputes the quiz score itself from the learner's raw submitted answers — the client never sends "I got an 80%," it sends the answers, and the server decides the score. A learner's browser is never a trusted source of their own grade.
+  **A single point of encapsulation for AI.** Routing every model call through OpenRouter from inside the backend means the model itself is just a config string (`deepseek/deepseek v4 flash`). Swapping it or paying for a stronger model on a route that needs it is a one line change, not a rewrite. The tradeoff is that the model is no longer a fixed, one time decision; it has to be planned for as an ongoing cost, and eventually as multiple paid providers with real financial exposure.
+  **Score integrity.** Every point, streak increment, and leaderboard row is written by server code that recomputes the quiz score itself from the learner's raw submitted answers the client never sends "I got an 80%," it sends the answers, and the server decides the score. A learner's browser is never a trusted source of their own grade.
 
 None of this is glamorous, but it's the boundary the whole system is organized around, and it's what keeps the AI layer, the data layer, and the trust layer from leaking into each other.
 
@@ -167,13 +167,13 @@ The model's response is now validated against `roadmapSchema` *before your code 
 
 The takeaway for anyone building this: **if the problem is about format, solve it in code with a schema, not in the prompt with polite instructions.** Don't ask the model to be well behaved. Make well behaved the only shape it's allowed to return.
 
-That validation is one layer among several in the boundary §3.2 described — client, API route, Zod schema, database row level security. With that many layers stacked up, it's worth being explicit about which one Zod actually is: it's the layer that guarantees *shape*, not correctness or safety — those are the API route's job and Supabase's job, respectively. Zod's specific responsibility is making sure that whatever the model decides to say, it says it in a shape the rest of the system can trust without inspecting it by hand. That trust is what makes the pipeline in §4 possible at all — and it's also exactly where that pipeline started breaking in ways a schema *couldn't* fix, which is where §5 picks up.
+That validation is one layer among several in the boundary §3.2 described — client, API route, Zod schema, database row level security. With that many layers stacked up, it's worth being explicit about which one Zod actually is: it's the layer that guarantees *shape*, not correctness or safety those are the API route's job and Supabase's job, respectively. Zod's specific responsibility is making sure that whatever the model decides to say, it says it in a shape the rest of the system can trust without inspecting it by hand. That trust is what makes the pipeline in §4 possible at all — and it's also exactly where that pipeline started breaking in ways a schema *couldn't* fix, which is where §5 picks up.
 
    
 
 ## 4. How StudySpark Generates a Micro Lecture
 
-*Audience: coders who want to implement this, and process managers who want to understand the shape of the pipeline. Job: show the actual mechanism — not that I did something clever, but how to do it.*
+*Audience: coders who want to implement this, and process managers who want to understand the shape of the pipeline. Job: show the actual mechanism not that I did something clever, but how to do it.*
 
 Generating a single micro lecture is not one model call. It's a pipeline of three stages, and each stage's output constrains the next. The most important design decisions are about *where* in that pipeline each decision gets made.
 
