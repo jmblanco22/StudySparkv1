@@ -65,32 +65,35 @@ Rather than describe the loop abstractly, here's one real run through it, using 
 
 ![Home screen](homescreen.png)
 
-A learner starts here — type a topic (or upload notes, per §1) and hit Generate. While StudySpark writes the roadmap, a short loading state keeps the wait from feeling dead:
+This is where every session starts. On the left, your recent roadmaps — pick one up where you left off. In the center, the generator: type a topic, or upload notes instead (§1). On the right, Surprise Me — a randomly generated topic and a short summary of what you'd learn, with a one-tap "yes, build this roadmap" if it catches your interest. It's a small feature, but it's there for the moment you don't have a topic in mind and just want to learn something.
+
+Type a topic — say, "Basic Derivatives" — and hit Generate. While StudySpark writes the roadmap, this shows up:
 
 ![Loading state](TheLoaderBear.png)
 
-A learner types a topic — say, "Basic Derivatives" — and StudySpark returns a roadmap: a handful of modules (Limits, Power Rule, Product Rule), each broken into submodules, ordered so each one builds on the last.
+That's deliberate, not decorative. Roadmap generation is the one wait in the whole app that can't be hidden behind streaming text (§4.3) — the model has to finish before there's anything to show. Rather than a blank screen or a generic spinner, a short animated loading state fills that gap so the wait registers as "working" instead of "stuck."
 
 ![Roadmap screen](roadmapscreen.png)
 
-Opening a submodule shows the micro-lecture itself: a short, plain-language explanation, with math rendered as typeset equations rather than plain text, and occasionally a photo where a real image adds something rather than distracts.
+The result: a handful of modules (here, Foundations of Derivatives, Computing Basic Derivatives), each broken into submodules, ordered so each one builds on the last. This is also where you'll first notice the AI assistant — the small circular icon in the bottom right, sitting above the nav bar on every page. It's there because a roadmap page is exactly where a question like "wait, what's a secant line again?" tends to come up.
 
 ![Example roadmap submodule](RoadmapEX.png)
 
-After reading, the learner takes a short quiz generated from that same lecture:
+Opening a submodule shows the micro-lecture itself: a short, plain-language explanation, with math rendered as typeset equations rather than plain text — the slope formula here is real LaTeX, not a screenshot of a textbook.
 
 ![Quiz screen](QuizScreen.png)
 
-...and gets an immediate recap of what they got right and wrong.
+After reading, the learner takes a short quiz generated from that same lecture — not a generic question bank, but one built from the specific explanation just read.
 
 ![Quiz results](Quiz Results.png)
 
-Each completed quiz updates a streak, a points total, and a position on a leaderboard shared with every other learner on StudySpark.
+...and gets an immediate recap of what they got right and wrong.
 
 ![Leaderboard](Leaderboard.png)
 
-That's the whole loop, and it's what's live today. It's worth being honest about the gap between that and the original vision: the formative research and the team's Figma prototype also called for friends-only leaderboards — the current board is global, not scoped to people you know. That's designed but not built. Where this report says "StudySpark does X," it means the deployed app does X today. Where it says StudySpark was "meant to" or "designed to," that's the dream version. §7 is explicit about the distance between the two.
+Each completed quiz updates a streak, a points total, and a position on a leaderboard shared with every other learner on StudySpark.
 
+That's the whole loop, and it's what's live today. It's worth being honest about the gap between that and the original vision: the formative research and the team's Figma prototype also called for friends-only leaderboards — the current board is global, not scoped to people you know. That's designed but not built. Where this report says "StudySpark does X," it means the deployed app does X today. Where it says StudySpark was "meant to" or "designed to," that's the dream version. §7 is explicit about the distance between the two.
 ---
 
 ## 3. Core Technology & Architecture
